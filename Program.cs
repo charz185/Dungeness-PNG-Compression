@@ -20,8 +20,8 @@ static class StrandsPNGCompression
 {
     public static void Main(string[] args)
     {
-        compressImage(@"C:\Users\CharlesZ\source\repos\StrandsPNGCompression\StrandsPNGCompression\A.png");
-        decompressImage(@"C:\Users\CharlesZ\source\repos\StrandsPNGCompression\StrandsPNGCompression\bin\Debug\net8.0\test.png");
+        compressImage(@"C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\Utah.png");
+        decompressImage(@"C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\test.png");
     }
     public static List<Color> MakeArrayFromImage(String image)
     {
@@ -56,7 +56,7 @@ static class StrandsPNGCompression
             NewIndexList0.Add([o[0], o[1]]);
             if (o[2] != 0)
             {
-                List<int> dec = DecimalToMetaRepeat(o[2]);
+                List<int> dec = [o[0],o[2]];
                 NewIndexList0.Add(dec);
             }
         }
@@ -320,7 +320,7 @@ static class StrandsPNGCompression
         while (count < bitmap.Height*bitmap.Width)
         {
             Color x = bitmap.GetPixel(count % bitmap.Width, (int)Math.Floor((decimal)(count / bitmap.Width)));
-            Indexes.Add(new List<int>() {(x.A<<8)+x.R,x.G,x.B});
+            Indexes.Add(new List<int>() {(x.A<<8)|x.R,x.G,x.B});
             count++;
         }
         returns.Add(Indexes);
@@ -329,7 +329,7 @@ static class StrandsPNGCompression
     public static Bitmap TurnNewIndexListTobitmap(List<Color> uniques, List<List<int>> NewIndexes, int[] sizeOfImage)
     {
         int total = uniques.Count+(NewIndexes.Count)+5;
-        int width = 20;
+        int width = 40;
         
         while (!(total % width  == 0))
         {
@@ -360,18 +360,13 @@ static class StrandsPNGCompression
         return newBitmap;
     }
 
-    public static int metaRepeatToDecimal(int count, int i2)
-    {
-        return (count);
-    }
-    public static List<int> DecimalToMetaRepeat(int i)
-    {
-        return (List<int>)[i&255,(1)];
-    }
     public static int checkForMetaSingle(int SearchingIndex, List<List<int>> AllData)
     {
         int var = 0;
-        
+        if (SearchingIndex+1 < AllData.Count && AllData[SearchingIndex][0] == AllData[SearchingIndex + 1][0] && AllData[SearchingIndex + 1][1] < 255)
+        {
+            var = AllData[SearchingIndex + 1][1];
+        }
         return var;
     }
     public static List<List<int>> CheckForMetaList(List<List<int>> AllData)

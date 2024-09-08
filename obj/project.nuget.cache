@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "dprlPnhr9bA=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\CharlesZ\\source\\repos\\StrandsPNGCompression\\Dungeness-PNG-Compression\\StrandsPNGCompression.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\CharlesZ\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
+    "C:\\Users\\CharlesZ\\.nuget\\packages\\system.drawing.common\\8.0.7\\system.drawing.common.8.0.7.nupkg.sha512"
+  ],
+  "logs": []
+}
