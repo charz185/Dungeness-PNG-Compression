@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Z3;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 // https://stackoverflow.com/a/13533895
 class RandomGen
 {
@@ -36,18 +37,22 @@ class RandomGen
         return ints;
     }
 
-    public static int nextSeed(List<int> indexes,int max)
+    public static Int64 nextSeed(List<int> indexes,int max)
     {
-        int max1 = (int)(Math.Pow(2, 16))-1;
-        for (int i = 1;i < max1; i++)
-        {
-            RandomGen rnd = new RandomGen(i);
-            List<int> new1 = rnd.nextBatch(max,indexes.Count);
-            if (new1.SequenceEqual(indexes)) {
-                return i;
-            }
-        }
-        return -1;
+        Int64 max1 = (int)(Math.Pow(2, 64))-1;
+        Int64  result = -1;
+        Parallel.For(1, max1,
+            (i,state) => {
+                RandomGen rnd = new RandomGen(i);
+                List<int> new1 = rnd.nextBatch(max, indexes.Count);
+                if (new1.SequenceEqual(indexes))
+                {
+                    result = i;
+                    state.Break();
+                }
+            }) ;
+        
+        return result;
         
     }
     public static bool checkIfSeedTrue(int seed, int index, int max)

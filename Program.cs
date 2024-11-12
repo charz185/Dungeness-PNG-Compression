@@ -16,17 +16,17 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics.Metrics;
 using System.Collections.Immutable;
 using System.Data.SqlTypes;
-
 internal static class StrandsPNGCompression
 {
     public static void Main(string[] args)
     {
         Stopwatch sw = Stopwatch.StartNew();
         sw.Start();
-        Dungeness.ProcCompressImg(@"C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\test.png","amog.bin",8);
-        Dungeness.procDecompressImg("amog.bin","c.png");
+        Dungeness.ProcCompressImg("c.png","amog.bin",16);
         sw.Stop();
-       Console.WriteLine(sw.ElapsedMilliseconds+"ms");
+        //Dungeness.procDecompressImg("amog.bin","c.png");
+
+        Console.WriteLine(sw.ElapsedMilliseconds+"ms");
     }
     
 }

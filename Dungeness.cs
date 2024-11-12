@@ -16,6 +16,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics.Metrics;
 using System.Collections.Immutable;
 using System.Data.SqlTypes;
+using ILGPU;
 class Dungeness
 {
     public Dungeness()
@@ -76,9 +77,8 @@ class Dungeness
 
 
     //Random
-    private static int FindSeedOfBatch(List<Color> UniqueList, List<Color> batch)
+    private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch)
     {
-        ;
         bool running = true;
         while (running)
         {
@@ -87,13 +87,13 @@ class Dungeness
             {
                 indexes.Add(UniqueList.IndexOf(c));
             }
-            int OtherSeed = RandomGen.nextSeed(indexes, UniqueList.Count);
+            long OtherSeed = RandomGen.nextSeed(indexes, UniqueList.Count);
             Console.WriteLine("Working " + OtherSeed);
             return OtherSeed;
         }
         return -1;
     }
-    private static void saveToBytes(List<Color> unique, List<int> seeds, String path, int batchSize, int[] imgSize)
+    private static void saveToBytes(List<Color> unique, List<long> seeds, String path, int batchSize, int[] imgSize)
     {
         using (FileStream fileStream = new FileStream(path, FileMode.Create))
         {
@@ -112,7 +112,7 @@ class Dungeness
                 }
                 foreach (int i in seeds)
                 {
-                    binaryWriter.Write((Int16)i);
+                    binaryWriter.Write((long)i);
                 }
                 binaryWriter.Close();
             }
@@ -174,7 +174,7 @@ class Dungeness
         List<Color> OldUnique = (Old.Distinct().ToList());
         Console.WriteLine(OldUnique.Count);
         int count = 0;
-        List<int> returnList = [];
+        List<long> returnList = [];
         List<List<Color>> list = new();
         for (int i = 0; i < Old.Count; i += batchSize)
         {
@@ -183,7 +183,7 @@ class Dungeness
         int z = 0;
         foreach (List<Color> i in list)
         {
-            int seedFound = FindSeedOfBatch(OldUnique, i);
+            long seedFound = FindSeedOfBatch(OldUnique, i);
             returnList.Add(seedFound);
 
             z += batchSize;

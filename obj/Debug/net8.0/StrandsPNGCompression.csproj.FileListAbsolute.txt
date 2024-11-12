@@ -37,7 +37,4 @@ C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\o
 C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Debug\net8.0\StrandsPNGCompression.pdb
 C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Debug\net8.0\StrandsPNGCompression.genruntimeconfig.cache
 C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Debug\net8.0\ref\StrandsPNGCompression.dll
-C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\libz3.dll
-C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\Microsoft.Z3.dll
-C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\runtimes\osx-x64\native\libz3.dylib
-C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\runtimes\win-x64\native\libz3.dll
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\ILGPU.dll
