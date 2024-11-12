@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using ILGPU;
+using ILGPU.Runtime;
 // https://stackoverflow.com/a/13533895
 class RandomGen
 {
@@ -21,9 +23,9 @@ class RandomGen
 
     public int nextInt(int max)
     {
-        last ^= (last << 23);
-        last ^= (last >>> 35);
-        last ^= (last << 4);
+        last ^= (last << 13);
+        last ^= (last >>> 17);
+        last ^= (last << 5);
         int out1 = (int)((last) % max);
         return (out1 < 0) ? -out1 : out1;
     }
@@ -62,7 +64,70 @@ class RandomGen
         return false;
 
     }
+    public static UInt128 ILGPU1(List<int> batch,int max)
+    {
+        using var context = Context.CreateDefault();
 
+        foreach (var device in context)
+        {
+            // Create accelerator for the given device
+            using var accelerator = context.GetPreferredDevice(preferCPU: false)
+                                  .CreateAccelerator(context);
+            Console.WriteLine($"Performing operations on {accelerator}");
+            var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<int>, ArrayView<int>,ArrayView<int>, int, ArrayView<int>>(MyKernel);
+
+            using var buffer = accelerator.Allocate1D<int>((int)(Math.Pow(2,29)) - 1);
+            using var result = accelerator.Allocate1D<int>((int)(1));
+            MemoryBuffer1D<int, Stride1D.Dense> batch1 = accelerator.Allocate1D<int>(batch.ToArray());
+            using var curBatch = accelerator.Allocate1D<int>((int)(batch.Count));
+            Console.WriteLine(result.GetAsArray1D()[0]);
+            kernel((int)buffer.Length, buffer.View,batch1.View,curBatch.View, max, result.View);
+            accelerator.Synchronize();
+            var data = buffer.GetAsArray1D();
+            Console.WriteLine(result.GetAsArray1D()[0]);
+            return (UInt128)result.GetAsArray1D()[0];
+        }
+        return 0;
+    }
+    static void MyKernel(
+            Index1D index,             // The global thread index (1D in this case)
+            ArrayView<int> indexes,
+            ArrayView<int> batch,
+            ArrayView<int> ints,
+            int max,
+            ArrayView<int> result)              // A sample uniform constant
+    {
+        if (result[0] == 0)
+        {
+            int last = index;
+            for (int i = 0; i < max; i++)
+            {
+                last ^= (last << 13);
+                last ^= (last >>> 17);
+                last ^= (last << 5);
+                int out1 = (int)((last) % max);
+                out1 = (out1 < 0) ? -out1 : out1;
+                ints[i] = out1;
+            }
+            bool found = true;
+            for (int i = 0; i < ints.Length; i++)
+            {
+                if (ints[i] != batch[i])
+                {
+                    found = false;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                indexes[index] = -1;
+            }
+            else
+            {
+                result[0] = index;
+            }
+        }
+    }
 }
 
 
