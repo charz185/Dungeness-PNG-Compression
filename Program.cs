@@ -28,5 +28,4 @@ internal static class StrandsPNGCompression
 
         Console.WriteLine(sw.ElapsedMilliseconds+"ms");
     }
-    
 }
