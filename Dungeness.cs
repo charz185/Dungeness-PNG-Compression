@@ -77,7 +77,7 @@ class Dungeness
 
 
     //Random
-    private static UInt128 FindSeedOfBatch(List<Color> UniqueList, List<Color> batch)
+    private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch)
     {
         bool running = true;
         while (running)
@@ -87,13 +87,13 @@ class Dungeness
             {
                 indexes.Add(UniqueList.IndexOf(c));
             }
-            UInt128 OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count);
+            long OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count);
             Console.WriteLine("Working " + OtherSeed);
             return OtherSeed;
         }
-        return (UInt128) 0;
+        return 0;
     }
-    private static void saveToBytes(List<Color> unique, List<UInt128> seeds, String path, int batchSize, int[] imgSize)
+    private static void saveToBytes(List<Color> unique, List<long> seeds, String path, int batchSize, int[] imgSize)
     {
         using (FileStream fileStream = new FileStream(path, FileMode.Create))
         {
@@ -110,7 +110,7 @@ class Dungeness
                     binaryWriter.Write(unique[i].B);
                     binaryWriter.Write(unique[i].A);
                 }
-                foreach (int i in seeds)
+                foreach (long i in seeds)
                 {
                     binaryWriter.Write((long)i);
                 }
@@ -143,7 +143,7 @@ class Dungeness
 
                     unique.Add(Color.FromArgb(a, r, g, b));
                 }
-                while (binaryReader.BaseStream.Length > binaryReader.BaseStream.Position + 3)
+                while (binaryReader.BaseStream.Length > binaryReader.BaseStream.Position + 4)
                 {
                     seeds.Add((long)binaryReader.ReadUInt64());
                     Console.WriteLine(seeds.Count);
@@ -174,7 +174,7 @@ class Dungeness
         List<Color> OldUnique = (Old.Distinct().ToList());
         Console.WriteLine(OldUnique.Count);
         int count = 0;
-        List<UInt128> returnList = [];
+        List<long> returnList = [];
         List<List<Color>> list = new();
         for (int i = 0; i < Old.Count; i += batchSize)
         {
@@ -183,7 +183,7 @@ class Dungeness
         int z = 0;
         foreach (List<Color> i in list)
         {
-            UInt128 seedFound = FindSeedOfBatch(OldUnique, i);
+            long seedFound = FindSeedOfBatch(OldUnique, i);
             returnList.Add(seedFound);
 
             z += batchSize;
