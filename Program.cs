@@ -22,7 +22,7 @@ internal static class StrandsPNGCompression
     {
         Stopwatch sw = Stopwatch.StartNew();
         sw.Start();
-        //Dungeness.ProcCompressImg(@"C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\c.png", "amog.bin",16);
+        Dungeness.ProcCompressImg(@"C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\test.png", "amog.bin",64);
         sw.Stop();
         Dungeness.procDecompressImg("amog.bin","c.png");
 

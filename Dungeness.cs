@@ -79,19 +79,14 @@ class Dungeness
     //Random
     private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch)
     {
-        bool running = true;
-        while (running)
+        List<int> indexes = [];
+        foreach (Color c in batch)
         {
-            List<int> indexes = [];
-            foreach (Color c in batch)
-            {
-                indexes.Add(UniqueList.IndexOf(c));
-            }
-            long OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count);
-            Console.WriteLine("Working " + OtherSeed);
-            return OtherSeed;
+            indexes.Add(UniqueList.IndexOf(c));
         }
-        return 0;
+        long OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count);
+        Console.WriteLine("Working " + OtherSeed);
+        return OtherSeed;
     }
     private static void saveToBytes(List<Color> unique, List<long> seeds, String path, int batchSize, int[] imgSize)
     {
@@ -110,9 +105,9 @@ class Dungeness
                     binaryWriter.Write(unique[i].B);
                     binaryWriter.Write(unique[i].A);
                 }
-                foreach (long i in seeds)
+                foreach (ulong i in seeds)
                 {
-                    binaryWriter.Write((long)i);
+                    binaryWriter.Write(i);
                 }
                 binaryWriter.Close();
             }
@@ -123,7 +118,7 @@ class Dungeness
         int batchSize = 4;
         int[] imgSize = new int[2];
         List<Color> unique = [];
-        List<long> seeds = [];
+        List<ulong> seeds = [];
 
 
         using (FileStream fileStream = new FileStream(path, FileMode.Open))
@@ -145,7 +140,7 @@ class Dungeness
                 }
                 while (binaryReader.BaseStream.Length > binaryReader.BaseStream.Position + 4)
                 {
-                    seeds.Add((long)binaryReader.ReadUInt64());
+                    seeds.Add((ulong)binaryReader.ReadUInt64());
                     Console.WriteLine(seeds.Count);
                 }
             }
@@ -200,7 +195,7 @@ class Dungeness
         int[] imgSize = (int[])returns[1];
         List<Color> Uniques = (List<Color>)returns[2];
         Console.WriteLine(Uniques[0]);
-        List<long> seeds = (List<long>)returns[3];
+        List<ulong> seeds = (List<ulong>)returns[3];
         List<Color> Pixels = [];
         for (int i = 0; i < seeds.Count; i++)
         {

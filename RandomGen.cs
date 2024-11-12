@@ -15,10 +15,10 @@ class RandomGen
     private long last;
     private long inc;
 
-    public RandomGen(long seed)
+    public RandomGen(ulong seed)
     {
-        this.last = seed;
-        this.inc = seed;
+        this.last = (long) seed;
+        this.inc = (long) seed;
     }
 
     public int nextInt(int max)
@@ -45,7 +45,7 @@ class RandomGen
         Int64  result = -1;
         Parallel.For(1, max1,
             (i,state) => {
-                RandomGen rnd = new RandomGen(i);
+                RandomGen rnd = new RandomGen((ulong)i);
                 List<int> new1 = rnd.nextBatch(max, indexes.Count);
                 if (new1.SequenceEqual(indexes))
                 {
@@ -59,7 +59,7 @@ class RandomGen
     }
     public static bool checkIfSeedTrue(int seed, int index, int max)
     {
-        RandomGen rnd = new RandomGen(seed);
+        RandomGen rnd = new RandomGen((ulong)seed);
         if (rnd.nextInt(max) == index) { return true; }
         return false;
 
@@ -72,30 +72,31 @@ class RandomGen
         using var accelerator = context.GetPreferredDevice(preferCPU:false)
                                 .CreateAccelerator(context);
         Console.WriteLine($"Performing operations on {accelerator}");
-        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<int>, ArrayView<int>, ArrayView<int>, int, ArrayView<long>>(MyKernel);
+        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<uint>, ArrayView<int>, ArrayView<int>, int, int, ArrayView<long>>(MyKernel);
 
-        using var buffer = accelerator.Allocate1D<int>((int)(Math.Pow(2, 29)) - 1);
+        using var buffer = accelerator.Allocate1D<uint>((uint)(Math.Pow(2, 29)) - 1);
         using var result = accelerator.Allocate1D<long>((long)(1));
         MemoryBuffer1D<int, Stride1D.Dense> batch1 = accelerator.Allocate1D<int>(batch.ToArray());
         using var curBatch = accelerator.Allocate1D<int>((int)(batch.Count));
-        Console.WriteLine(result.GetAsArray1D()[0]);
-        kernel((int)buffer.Length, buffer.View, batch1.View, curBatch.View, max, result.View);
-        accelerator.Synchronize();
+        Console.WriteLine(batch.Count);
+        kernel((int)buffer.Length, buffer.View, batch1.View, curBatch.View, max,batch.Count, result.View);
+       // accelerator.Synchronize();
         var data = buffer.GetAsArray1D();
         return result.GetAsArray1D()[0];
     }
     static void MyKernel(
             Index1D index,             // The global thread index (1D in this case)
-            ArrayView<int> indexes,
+            ArrayView<uint> indexes,
             ArrayView<int> batch,
             ArrayView<int> ints,
             int max,
+            int batchSize,
             ArrayView<long> result)              // A sample uniform constant
     {
         if (result[0] == 0)
         {
-            long last = index;
-            for (int i = 0; i < 16; i++)
+            long last = index*1000000;
+            for (int i = 0; i < batchSize; i++)
             {
                 last ^= (last << 13);
                 last ^= (last >>> 7);
@@ -104,7 +105,7 @@ class RandomGen
                 ints[i] = (out1 < 0) ? -out1 : out1;
             }
             bool found = true;
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < batchSize; i++)
             {
                 if (ints[i] != batch[i])
                 {
@@ -114,7 +115,7 @@ class RandomGen
             }
             if (found)
             {
-                result[0] = index;
+                result[0] = index* 1000000;
             }
         }
     }
