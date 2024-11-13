@@ -84,7 +84,7 @@ class Dungeness
         {
             indexes.Add(UniqueList.IndexOf(c));
         }
-        long OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count);
+        long OtherSeed = RandomGen.nextSeed(indexes, UniqueList.Count);
         Console.WriteLine("Working " + OtherSeed);
         return OtherSeed;
     }
