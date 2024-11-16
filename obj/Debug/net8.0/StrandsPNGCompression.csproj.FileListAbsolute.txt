@@ -18,3 +18,5 @@ C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\o
 C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Debug\net8.0\StrandsPNGCompression.pdb
 C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Debug\net8.0\StrandsPNGCompression.genruntimeconfig.cache
 C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Debug\net8.0\ref\StrandsPNGCompression.dll
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\ILGPU.dll
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Debug\net8.0\System.Private.Windows.Core.dll

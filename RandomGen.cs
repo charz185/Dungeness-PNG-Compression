@@ -1,73 +1,4 @@
-<<<<<<< Updated upstream
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-// https://stackoverflow.com/a/13533895
-class RandomGen
-{
-    private long last;
-    private long inc;
 
-    public RandomGen(long seed)
-    {
-        this.last = seed;
-        this.inc = seed;
-    }
-
-    public int nextInt(int max)
-    {
-        last ^= (last << 23);
-        last ^= (last >>> 35);
-        last ^= (last << 4);
-        int out1 = (int)((last) % max);
-        return (out1 < 0) ? -out1 : out1;
-    }
-    public List<int> nextBatch(int max, int amt) 
-    {
-        List<int> ints = new List<int>();
-        for (int i = 0; i < amt; i++)
-        {
-            ints.Add(nextInt(max));
-        }
-        return ints;
-    }
-
-    public static Int64 nextSeed(List<int> indexes,int max)
-    {
-        Int64 max1 = (int)(Math.Pow(2, 64))-1;
-        Int64  result = -1;
-        Parallel.For(1, max1,
-            (i,state) => {
-                RandomGen rnd = new RandomGen(i);
-                List<int> new1 = rnd.nextBatch(max, indexes.Count);
-                if (new1.SequenceEqual(indexes))
-                {
-                    result = i;
-                    state.Break();
-                }
-            }) ;
-        
-        return result;
-        
-    }
-    public static bool checkIfSeedTrue(int seed, int index, int max)
-    {
-        RandomGen rnd = new RandomGen(seed);
-        if (rnd.nextInt(max) == index) { return true; }
-        return false;
-
-    }
-
-}
-
-
-=======
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,6 +12,7 @@ using ILGPU;
 using ILGPU.Util;
 using ILGPU.Runtime;
 using ILGPU.Runtime.Cuda;
+using System.Drawing.Interop;
 // https://stackoverflow.com/a/13533895
 class RandomGen
 {
@@ -93,45 +25,38 @@ class RandomGen
         this.inc = (long) seed;
     }
 
-    public int nextInt(int max)
+    public long nextInt(int max)
     {
         last ^= (last << 13);
         last ^= (last >>> 7);
         last ^= (last << 17);
-        int out1 = (int)((last) % max);
-        return (out1 < 0) ? -out1 : out1;
+        return Math.Abs(last % max);
     }
-    public int[] nextBatch(int max, int amt) 
+    public uint[] nextBatch(int max, int amt) 
     {
-        int[] ints = new int[amt];
+        uint[] ints = new uint[amt];
         for (int i = 0; i < amt; i++)
         {
-            ints[i] = (nextInt(max));
+            ints[i] = (uint)(nextInt(max));
         }
         return ints;
     }
     public void setLast(ulong seed) { this.last = (long)seed; }
     public static Int64 nextSeed(List<int> indexes,int max)
     {
-        Int128 max1 = (Int128)(Math.Pow(2, 120))-1;
+        long max1 = long.MaxValue-1;
         Int64  result = -1;
-        RandomGen rnd = new RandomGen(0);
-        for (ulong i = 1; i < max1; i++)
-        {
-            rnd.setLast(i);
-            int[] new1 = rnd.nextBatch(max, indexes.Count);
-            if (new1.SequenceEqual(indexes))
-            {
-                result = (Int64)i;
-                break;
-            }
+        uint[] indexes2 = new uint[indexes.Count];
+        for (int i = 0; i < indexes.Count; i++)
+        { 
+            indexes2[i] = (uint)indexes[i];
+
         }
-        return result; 
         Parallel.For(1, (long)max1,
             (i,state) => {
                 RandomGen rnd = new RandomGen((ulong)i);
-                int[] new1 = rnd.nextBatch(max, indexes.Count);
-                if (new1.SequenceEqual(indexes))
+                uint[] new1 = rnd.nextBatch(max, indexes.Count);
+                if (new1.SequenceEqual(indexes2))
                 {
                     result = i;
                     state.Break();
@@ -164,8 +89,8 @@ class RandomGen
         ints.MemSetToZero();
         result.MemSetToZero();
         Console.WriteLine(batch.Count);
-        int length = 99999999;
-        kernel((int)length, batch1.View, max,(uint)batch.Count, result.View,ints.View);
+        int length = 999999;
+        kernel((Index1D)length, batch1.View, max,(uint)batch.Count, result.View,ints.View);
         accelerator.Synchronize();
 
         return result.GetAsArray1D()[0];
@@ -181,16 +106,16 @@ class RandomGen
     {
         if (Atomic.CompareExchange(ref result[0], 0, 0) == 0)
         {
-            var last = 0;
-            Atomic.Exchange(ref last, i);
+            var last = (int)i;
+
             for (var z = 0; z < batch.Length; z++)
             {
-                Atomic.Xor(ref last, (last << 13));
-                Atomic.Xor(ref last, (last >>> 7));
-                Atomic.Xor(ref last, (last << 17));
+                last ^= (last << 13);
+                last ^= (last >>> 7);
+                last ^= (last << 17);
                 var out1 = last % max;
                 out1 = (int)((out1 < 0) ? -out1 : out1);
-                Atomic.Exchange(ref ints[z], out1);
+                ints[z] = out1;
             }
             var found = true;
             for (var z = 0; z < batch.Length; z++)
@@ -205,17 +130,12 @@ class RandomGen
             }
             if (found)
             {
-                if (result[0] == 0)
-                {
                     Interop.Write("{0} ", i);
                     // Set the result to the smallest index that found a match
                     Atomic.Min(ref result[0], i);
                     Interop.Write("a{0} ", result[0]);
-                }
+               
             }
         }
     }
 }
-
-
->>>>>>> Stashed changes

@@ -50,9 +50,13 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "ILGPU": {
+              "target": "Package",
+              "version": "[1.5.1, )"
+            },
             "System.Drawing.Common": {
               "target": "Package",
-              "version": "[8.0.7, )"
+              "version": "[9.0.0, )"
             }
           },
           "imports": [

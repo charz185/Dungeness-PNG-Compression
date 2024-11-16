@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "dprlPnhr9bA=",
+  "dgSpecHash": "K7Le1c7ZETc=",
   "success": true,
   "projectFilePath": "C:\\Users\\CharlesZ\\source\\repos\\StrandsPNGCompression\\Dungeness-PNG-Compression\\StrandsPNGCompression.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\CharlesZ\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
-    "C:\\Users\\CharlesZ\\.nuget\\packages\\system.drawing.common\\8.0.7\\system.drawing.common.8.0.7.nupkg.sha512"
+    "C:\\Users\\CharlesZ\\.nuget\\packages\\ilgpu\\1.5.1\\ilgpu.1.5.1.nupkg.sha512",
+    "C:\\Users\\CharlesZ\\.nuget\\packages\\microsoft.win32.systemevents\\9.0.0\\microsoft.win32.systemevents.9.0.0.nupkg.sha512",
+    "C:\\Users\\CharlesZ\\.nuget\\packages\\system.drawing.common\\9.0.0\\system.drawing.common.9.0.0.nupkg.sha512"
   ],
   "logs": []
 }
