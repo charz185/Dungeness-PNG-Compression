@@ -15,6 +15,22 @@
           }
         }
       },
+      "ILGPU.Algorithms/1.5.1": {
+        "type": "package",
+        "dependencies": {
+          "ILGPU": "1.5.1"
+        },
+        "compile": {
+          "lib/net7.0/ILGPU.Algorithms.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/ILGPU.Algorithms.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Win32.SystemEvents/9.0.0": {
         "type": "package",
         "compile": {
@@ -87,6 +103,30 @@
         "lib/net7.0/ILGPU.xml",
         "lib/netstandard2.1/ILGPU.dll",
         "lib/netstandard2.1/ILGPU.xml"
+      ]
+    },
+    "ILGPU.Algorithms/1.5.1": {
+      "sha512": "PCoyiLrku1GXWJFU7XNQiTLYmwm5igHpzW6dv+5pBQcm8Ufav0V1jXtnWme/WuE8mlC1fkpHWspEUJdltgrYSg==",
+      "type": "package",
+      "path": "ilgpu.algorithms/1.5.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE-3RD-PARTY.txt",
+        "LICENSE.txt",
+        "ilgpu.algorithms.1.5.1.nupkg.sha512",
+        "ilgpu.algorithms.nuspec",
+        "lib/net471/ILGPU.Algorithms.dll",
+        "lib/net471/ILGPU.Algorithms.pdb",
+        "lib/net471/ILGPU.Algorithms.xml",
+        "lib/net5.0/ILGPU.Algorithms.dll",
+        "lib/net5.0/ILGPU.Algorithms.xml",
+        "lib/net6.0/ILGPU.Algorithms.dll",
+        "lib/net6.0/ILGPU.Algorithms.xml",
+        "lib/net7.0/ILGPU.Algorithms.dll",
+        "lib/net7.0/ILGPU.Algorithms.xml",
+        "lib/netstandard2.1/ILGPU.Algorithms.dll",
+        "lib/netstandard2.1/ILGPU.Algorithms.xml"
       ]
     },
     "Microsoft.Win32.SystemEvents/9.0.0": {
@@ -167,6 +207,7 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "ILGPU >= 1.5.1",
+      "ILGPU.Algorithms >= 1.5.1",
       "System.Drawing.Common >= 9.0.0"
     ]
   },
@@ -214,13 +255,18 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
           "ILGPU": {
+            "target": "Package",
+            "version": "[1.5.1, )"
+          },
+          "ILGPU.Algorithms": {
             "target": "Package",
             "version": "[1.5.1, )"
           },
@@ -245,7 +291,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

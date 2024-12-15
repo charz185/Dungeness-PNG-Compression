@@ -21,24 +21,27 @@ internal static class StrandsPNGCompression
 {
     public static void Main(string[] args)
     {
+
         Console.WriteLine("Path?");
         String path = Console.ReadLine();
         Console.WriteLine("batch Size?");
         int batchSize = Convert.ToInt32(Console.ReadLine());
         Console.WriteLine("(C/G)");
         String use = Console.ReadLine();
+        Console.WriteLine("(Length long)");
+        ulong length = Convert.ToUInt64(Console.ReadLine());
         Stopwatch sw = Stopwatch.StartNew();
         sw.Start();
         if (use.StartsWith("G"))
         {
-            Dungeness.ProcCompressImg(path, "amog.bin", false,batchSize);
+            Dungeness.ProcCompressImg(path, "amog.bin", false,batchSize,length);
         }
         else
         {
             Dungeness.ProcCompressImg(path, "amog.bin",true,  batchSize);
         }
         sw.Stop();
-        Dungeness.procDecompressImg("amog.bin","c.png");
+        Dungeness.procDecompressImg("amog.bin", "c.png");
 
         Console.WriteLine(sw.ElapsedMilliseconds+"ms");
     }

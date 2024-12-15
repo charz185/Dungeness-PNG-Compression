@@ -18,6 +18,7 @@ using System.Diagnostics.Metrics;
 using System.Collections.Immutable;
 using System.Data.SqlTypes;
 using ILGPU;
+using System.ComponentModel.DataAnnotations;
 class Dungeness
 {
     public Dungeness()
@@ -78,7 +79,7 @@ class Dungeness
 
 
     //Random
-    private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch, bool useCpu)
+    private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch, bool useCpu,ulong length)
     {
         List<int> indexes = [];
         foreach (Color c in batch)
@@ -92,7 +93,7 @@ class Dungeness
         }
         else
         {
-            OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count);
+            OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count,length);
         }
         Console.WriteLine("Working " + OtherSeed);
         return OtherSeed;
@@ -157,7 +158,7 @@ class Dungeness
         List<object> returnList = [batchSize, imgSize, unique, seeds];
         return returnList;
     }
-    public static void ProcCompressImg(String path, String savePath, bool useCpu,int batchSize = -1 )
+    public static void ProcCompressImg(String path, String savePath, bool useCpu,int batchSize = -1,ulong Length = 999999 )
     {
         List<Color> Old = MakeArrayFromImage(path);
 
@@ -183,16 +184,17 @@ class Dungeness
         for (int i = 0; i < Old.Count; i += batchSize)
         {
             list.Add(Old.GetRange(i, batchSize));
+            returnList.Add(0);
         }
-        int z = 0;
-        foreach (List<Color> i in list)
+       
+        Parallel.ForEach(list, (i,state,index) =>
         {
-            long seedFound = FindSeedOfBatch(OldUnique, i,useCpu);
-            returnList.Add(seedFound);
+            long seedFound = FindSeedOfBatch(OldUnique, i, useCpu,Length);
+            returnList[(int)index] = seedFound;
 
-            z += batchSize;
-            Console.WriteLine("Z" + z);
-        }
+
+            Console.WriteLine("Z" + index);
+        });
         // saveList.AddRange(returnList);
         //File.WriteAllLines("result.txt", saveList);
         saveToBytes(OldUnique, returnList, savePath, batchSize, ImgSize);
