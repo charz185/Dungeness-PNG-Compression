@@ -1,3 +1,4 @@
+
 ﻿using static System.Formats.Asn1.AsnWriter;
 using System.Drawing;
 using System.Collections;
@@ -17,6 +18,7 @@ using System.Diagnostics.Metrics;
 using System.Collections.Immutable;
 using System.Data.SqlTypes;
 using ILGPU;
+using System.ComponentModel.DataAnnotations;
 class Dungeness
 {
     public Dungeness()
@@ -77,14 +79,22 @@ class Dungeness
 
 
     //Random
-    private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch)
+    private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch, bool useCpu,ulong length)
     {
         List<int> indexes = [];
         foreach (Color c in batch)
         {
             indexes.Add(UniqueList.IndexOf(c));
         }
-        long OtherSeed = RandomGen.nextSeed(indexes, UniqueList.Count);
+        long OtherSeed = -1;
+        if (useCpu)
+        {
+            OtherSeed = RandomGen.nextSeed(indexes, UniqueList.Count);
+        }
+        else
+        {
+            OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count,length);
+        }
         Console.WriteLine("Working " + OtherSeed);
         return OtherSeed;
     }
@@ -107,7 +117,7 @@ class Dungeness
                 }
                 foreach (ulong i in seeds)
                 {
-                    binaryWriter.Write(i);
+                    binaryWriter.Write((UInt32)i);
                 }
                 binaryWriter.Close();
             }
@@ -138,9 +148,9 @@ class Dungeness
 
                     unique.Add(Color.FromArgb(a, r, g, b));
                 }
-                while (binaryReader.BaseStream.Length > binaryReader.BaseStream.Position + 4)
+                while (binaryReader.BaseStream.Length > binaryReader.BaseStream.Position +2)
                 {
-                    seeds.Add((ulong)binaryReader.ReadUInt64());
+                    seeds.Add((ulong)binaryReader.ReadUInt32());
                     Console.WriteLine(seeds.Count);
                 }
             }
@@ -148,7 +158,7 @@ class Dungeness
         List<object> returnList = [batchSize, imgSize, unique, seeds];
         return returnList;
     }
-    public static void ProcCompressImg(String path, String savePath, int batchSize = -1)
+    public static void ProcCompressImg(String path, String savePath, bool useCpu,int batchSize = -1,ulong Length = 999999 )
     {
         List<Color> Old = MakeArrayFromImage(path);
 
@@ -174,16 +184,17 @@ class Dungeness
         for (int i = 0; i < Old.Count; i += batchSize)
         {
             list.Add(Old.GetRange(i, batchSize));
+            returnList.Add(0);
         }
-        int z = 0;
-        foreach (List<Color> i in list)
+       
+        Parallel.ForEach(list, (i,state,index) =>
         {
-            long seedFound = FindSeedOfBatch(OldUnique, i);
-            returnList.Add(seedFound);
+            long seedFound = FindSeedOfBatch(OldUnique, i, useCpu,Length);
+            returnList[(int)index] = seedFound;
 
-            z += batchSize;
-            Console.WriteLine("Z" + z);
-        }
+
+            Console.WriteLine("Z" + index);
+        });
         // saveList.AddRange(returnList);
         //File.WriteAllLines("result.txt", saveList);
         saveToBytes(OldUnique, returnList, savePath, batchSize, ImgSize);
@@ -201,7 +212,7 @@ class Dungeness
         {
             Console.WriteLine(seeds[i]);
             RandomGen rnd = new RandomGen(seeds[i]);
-            List<int> indexes = rnd.nextBatch(Uniques.Count, batchSize);
+            uint[] indexes = rnd.nextBatch(Uniques.Count, batchSize);
             foreach (int x in indexes)
             {
                 Pixels.Add(Uniques[x]);
@@ -218,4 +229,3 @@ class Dungeness
         SaveBmpAsPNG(newImg, output);
     }
 }
-
