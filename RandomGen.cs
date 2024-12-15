@@ -91,8 +91,8 @@ class RandomGen
         using var context = Context.Create(builder => builder.Default().EnableAlgorithms());
 
         // Create accelerator for the given device
-        using var accelerator = context.GetPreferredDevice(preferCPU:false)
-                                .CreateAccelerator(context);
+        Device d = context.GetCudaDevices()[0];
+        using var accelerator = d.CreateAccelerator(context);
         Console.WriteLine($"Performing operations on {accelerator}");
         var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D,int,ArrayView2D<int,Stride2D.DenseY>,ArrayView1D<int, Stride1D.Dense>,ArrayView1D<int,Stride1D.Dense>,ulong>(Kernel3);
         using var ints = accelerator.Allocate1D<int>(batch.Count);
@@ -108,7 +108,7 @@ class RandomGen
         ulong offset = 0;
         while (seed[0] == 0)
         {
-            Console.WriteLine(offset*4);
+            //Console.WriteLine(offset*(ulong)batch.Count*4);
             inputBuffer.MemSetToZero();
             var dimXY = new Index2D(batch.Count, (int)length);
             var batch3 = inputBuffer.View.As2DDenseYView(dimXY);

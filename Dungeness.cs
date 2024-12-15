@@ -186,8 +186,9 @@ class Dungeness
             list.Add(Old.GetRange(i, batchSize));
             returnList.Add(0);
         }
-       
-        Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (i,state,index) =>
+
+
+        Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 16 }, (i,state,index) =>
         {
             ulong seedFound = FindSeedOfBatch(OldUnique, i, useCpu,Length);
             returnList[(int)index] = seedFound;
@@ -195,6 +196,7 @@ class Dungeness
 
             Console.WriteLine("Z" + index);
         });
+        
         // saveList.AddRange(returnList);
         //File.WriteAllLines("result.txt", saveList);
         saveToBytes(OldUnique, returnList, savePath, batchSize, ImgSize);
