@@ -79,17 +79,17 @@ class Dungeness
 
 
     //Random
-    private static long FindSeedOfBatch(List<Color> UniqueList, List<Color> batch, bool useCpu,ulong length)
+    private static ulong FindSeedOfBatch(List<Color> UniqueList, List<Color> batch, bool useCpu,ulong length)
     {
         List<int> indexes = [];
         foreach (Color c in batch)
         {
             indexes.Add(UniqueList.IndexOf(c));
         }
-        long OtherSeed = -1;
+        ulong OtherSeed = 0;
         if (useCpu)
         {
-            OtherSeed = RandomGen.nextSeed(indexes, UniqueList.Count);
+            OtherSeed = (ulong)RandomGen.nextSeed(indexes, UniqueList.Count);
         }
         else
         {
@@ -98,7 +98,7 @@ class Dungeness
         Console.WriteLine("Working " + OtherSeed);
         return OtherSeed;
     }
-    private static void saveToBytes(List<Color> unique, List<long> seeds, String path, int batchSize, int[] imgSize)
+    private static void saveToBytes(List<Color> unique, List<ulong> seeds, String path, int batchSize, int[] imgSize)
     {
         using (FileStream fileStream = new FileStream(path, FileMode.Create))
         {
@@ -179,7 +179,7 @@ class Dungeness
         List<Color> OldUnique = (Old.Distinct().ToList());
         Console.WriteLine(OldUnique.Count);
         int count = 0;
-        List<long> returnList = [];
+        List<ulong> returnList = [];
         List<List<Color>> list = new();
         for (int i = 0; i < Old.Count; i += batchSize)
         {
@@ -187,9 +187,9 @@ class Dungeness
             returnList.Add(0);
         }
        
-        Parallel.ForEach(list, (i,state,index) =>
+        Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (i,state,index) =>
         {
-            long seedFound = FindSeedOfBatch(OldUnique, i, useCpu,Length);
+            ulong seedFound = FindSeedOfBatch(OldUnique, i, useCpu,Length);
             returnList[(int)index] = seedFound;
 
 

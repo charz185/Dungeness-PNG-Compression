@@ -86,7 +86,7 @@ class RandomGen
         return false;
 
     }
-    public static long ILGPU1(List<int> batch,int max,ulong length)
+    public static ulong ILGPU1(List<int> batch,int max,ulong length)
     {
         using var context = Context.Create(builder => builder.Default().EnableAlgorithms());
 
@@ -94,7 +94,7 @@ class RandomGen
         using var accelerator = context.GetPreferredDevice(preferCPU:false)
                                 .CreateAccelerator(context);
         Console.WriteLine($"Performing operations on {accelerator}");
-        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D,int,ArrayView2D<int,Stride2D.DenseY>,ArrayView1D<int, Stride1D.Dense>,ArrayView1D<int,Stride1D.Dense>>(Kernel3);
+        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D,int,ArrayView2D<int,Stride2D.DenseY>,ArrayView1D<int, Stride1D.Dense>,ArrayView1D<int,Stride1D.Dense>,ulong>(Kernel3);
         using var ints = accelerator.Allocate1D<int>(batch.Count);
         using var batch1 = accelerator.Allocate1D<int>(batch.Count);
         batch1.CopyFromCPU(batch.ToArray());
@@ -102,21 +102,31 @@ class RandomGen
         Console.WriteLine(batch.Count);
 
         int[] seed = new int[1];
+        ulong seed2 = 0;
         var batch2 = new int[(ulong)(length * (ulong)batch.Count)];
         using var inputBuffer = accelerator.Allocate1D(batch2);
-        inputBuffer.MemSetToZero();
-        var dimXY = new Index2D(batch.Count, (int)length);
-        var batch3 = inputBuffer.View.As2DDenseYView(dimXY);
-        using var vv = accelerator.Allocate1D<int>(1);
-        kernel((int)length,max,batch3,batch1.View,vv.View);
-        vv.CopyToCPU(seed);
-
-        return seed[0];
+        ulong offset = 0;
+        while (seed[0] == 0)
+        {
+            Console.WriteLine(offset*4);
+            inputBuffer.MemSetToZero();
+            var dimXY = new Index2D(batch.Count, (int)length);
+            var batch3 = inputBuffer.View.As2DDenseYView(dimXY);
+            using var vv = accelerator.Allocate1D<int>(1);
+            kernel((int)length, max, batch3, batch1.View, vv.View, offset);
+            vv.CopyToCPU(seed);
+            seed2 = (ulong)seed[0];
+            seed2 += offset;
+            offset += (ulong)(length) * (ulong)(batch.Count);
+        }
+        return seed2;
+        
+        
     }
 
-    static void Kernel3(Index1D i,int max,ArrayView2D<int,Stride2D.DenseY> batch1, ArrayView1D<int,Stride1D.Dense> batch, ArrayView1D<int, Stride1D.Dense> result)
+    static void Kernel3(Index1D i,int max,ArrayView2D<int,Stride2D.DenseY> batch1, ArrayView1D<int,Stride1D.Dense> batch, ArrayView1D<int, Stride1D.Dense> result,ulong offset)
     { 
-        long last = i;
+        long last = i + (long)offset;
         if (Atomic.CompareExchange(ref result[0], 0, 0) == 0)
         {
             for (int z = 0; z < batch.Length; z++)

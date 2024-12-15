@@ -24,6 +24,8 @@ internal static class StrandsPNGCompression
 
         Console.WriteLine("Path?");
         String path = Console.ReadLine();
+        Console.WriteLine("Output Path?");
+        String OutPath = Console.ReadLine();
         Console.WriteLine("batch Size?");
         int batchSize = Convert.ToInt32(Console.ReadLine());
         Console.WriteLine("(C/G)");
@@ -34,14 +36,14 @@ internal static class StrandsPNGCompression
         sw.Start();
         if (use.StartsWith("G"))
         {
-            Dungeness.ProcCompressImg(path, "amog.bin", false,batchSize,length);
+            Dungeness.ProcCompressImg(path, OutPath, false,batchSize,length);
         }
         else
         {
-            Dungeness.ProcCompressImg(path, "amog.bin",true,  batchSize);
+            Dungeness.ProcCompressImg(path,OutPath,true,  batchSize);
         }
         sw.Stop();
-        Dungeness.procDecompressImg("amog.bin", "c.png");
+        Dungeness.procDecompressImg(OutPath, "c.png");
 
         Console.WriteLine(sw.ElapsedMilliseconds+"ms");
     }
