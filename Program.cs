@@ -1,8 +1,6 @@
-
 using static System.Formats.Asn1.AsnWriter;
 using System.Drawing;
 using System.Collections;
-using System.Drawing.Printing;
 using System.Threading;
 using System.Threading.Tasks;
 using System;
@@ -21,28 +19,40 @@ internal static class StrandsPNGCompression
 {
     public static void Main(string[] args)
     {
-
-        Console.WriteLine("Path?");
-        String path = Console.ReadLine();
-        Console.WriteLine("batch Size?");
-        int batchSize = Convert.ToInt32(Console.ReadLine());
-        Console.WriteLine("(C/G)");
-        String use = Console.ReadLine();
-        Console.WriteLine("(Length long)");
-        ulong length = Convert.ToUInt64(Console.ReadLine());
-        Stopwatch sw = Stopwatch.StartNew();
-        sw.Start();
-        if (use.StartsWith("G"))
+        bool running = true;
+        while (running)
         {
-            Dungeness.ProcCompressImg(path, "amog.bin", false,batchSize,length);
-        }
-        else
-        {
-            Dungeness.ProcCompressImg(path, "amog.bin",true,  batchSize);
-        }
-        sw.Stop();
-        Dungeness.procDecompressImg("amog.bin", "c.png");
+            Console.WriteLine("Path?");
+            String path = Console.ReadLine();
+            Console.WriteLine("Output Path?");
+            String OutPath = Console.ReadLine();
+            Console.WriteLine("batch Size?");
+            int batchSize = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("(C/G)");
+            String use = Console.ReadLine();
+            Console.WriteLine("(Length long)");
+            ulong length = Convert.ToUInt64(Console.ReadLine());
+            Stopwatch sw = Stopwatch.StartNew();
+            sw.Start();
+            if (use.StartsWith("G"))
+            {
+                Dungeness.ProcCompressImg(path, OutPath, false, batchSize, length);
+            }
+            else
+            {
+                Dungeness.ProcCompressImg(path, OutPath, true, batchSize);
+            }
+            sw.Stop();
+            Dungeness.procDecompressImg(OutPath, "c.png");
 
-        Console.WriteLine(sw.ElapsedMilliseconds+"ms");
+            Console.WriteLine(sw.ElapsedMilliseconds + "ms");
+
+            Console.WriteLine("Exit? (y/n)");
+            String exit = Console.ReadLine();
+            if (exit == "y")
+            {
+                running = false;
+            }
+        }
     }
 }
