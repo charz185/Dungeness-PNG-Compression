@@ -12,7 +12,6 @@ using ILGPU;
 using ILGPU.Util;
 using ILGPU.Runtime;
 using ILGPU.Runtime.Cuda;
-using System.Drawing.Interop;
 using ILGPU.IR.Values;
 using ILGPU.Algorithms.Random;
 using ILGPU.Runtime.OpenCL;
