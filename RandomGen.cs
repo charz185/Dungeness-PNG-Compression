@@ -92,13 +92,13 @@ class RandomGen
         // Create accelerator for the given device
         Device d = context.GetCudaDevices()[0];
         using var accelerator = d.CreateAccelerator(context);
-        Console.WriteLine($"Performing operations on {accelerator}");
+        //Console.WriteLine($"Performing operations on {accelerator}");
         var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D,int,ArrayView2D<int,Stride2D.DenseY>,ArrayView1D<int, Stride1D.Dense>,ArrayView1D<int,Stride1D.Dense>,ulong>(Kernel3);
         using var ints = accelerator.Allocate1D<int>(batch.Count);
         using var batch1 = accelerator.Allocate1D<int>(batch.Count);
         batch1.CopyFromCPU(batch.ToArray());
         ints.MemSetToZero();
-        Console.WriteLine(batch.Count);
+        //Console.WriteLine(batch.Count);
 
         int[] seed = new int[1];
         ulong seed2 = 0;

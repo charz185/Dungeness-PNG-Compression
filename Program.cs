@@ -30,13 +30,13 @@ internal static class StrandsPNGCompression
             int batchSize = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("(C/G)");
             String use = Console.ReadLine();
-            Console.WriteLine("(Length long)");
+            Console.WriteLine("Search amount per tick (length)?");
             ulong length = Convert.ToUInt64(Console.ReadLine());
             Stopwatch sw = Stopwatch.StartNew();
             sw.Start();
             if (use.StartsWith("G"))
             {
-                Dungeness.ProcCompressImg(path, OutPath, false, batchSize, length);
+                Dungeness.ProcCompressLargeImage(path, OutPath, false, 8, 8,batchSize, length);
             }
             else
             {
