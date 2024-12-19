@@ -110,7 +110,7 @@ class Dungeness
                 binaryWriter.Write((byte)imgSize[1]);
                 foreach (List<object> result in results) {
                     List<IPixel<ushort>> unique = (List<IPixel<ushort>>)result[0];
-                    List<int> seeds = (List<int>)result[1];
+                    List<ulong> seeds = (List<ulong>)result[1];
                     binaryWriter.Write((Int16)unique.Count);
                     for (int i = 0; i < unique.Count; i++)
                     {
