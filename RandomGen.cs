@@ -140,8 +140,8 @@ class RandomGen
         using var ints = accelerator.Allocate1D<int>(batch.Count);
         using var batch1 = accelerator.Allocate1D<int>(batch.Count);
 
-        using var ints1 = accelerator.Allocate1D<int>(batch.Count);
-        using var batchTwo = accelerator.Allocate1D<int>(batch.Count);
+        using var ints1 = accelerator1.Allocate1D<int>(batch.Count);
+        using var batchTwo = accelerator1.Allocate1D<int>(batch.Count);
 
         batch1.CopyFromCPU(batch.ToArray());
         ints.MemSetToZero();
