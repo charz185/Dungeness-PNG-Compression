@@ -36,7 +36,9 @@ internal static class StrandsPNGCompression
             sw.Start();
             if (use.StartsWith("G"))
             {
-                Dungeness.ProcCompressLargeImage(path, OutPath, false, 8, 8,batchSize, length);
+                Console.WriteLine("GPU Count?: ");
+                int gpuCount = Convert.ToInt16(Console.ReadLine());
+                Dungeness.ProcCompressLargeImage(path, OutPath, false, 8, 8,gpuCount,batchSize, length);
             }
             else
             {

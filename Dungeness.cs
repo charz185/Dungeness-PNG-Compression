@@ -55,7 +55,7 @@ class Dungeness
         return newPixelArray;
     }
     //Random
-    private static ulong FindSeedOfBatch(List<IPixel<ushort>> UniqueList, List<IPixel<ushort>> batch, bool useCpu,ulong length)
+    private static ulong FindSeedOfBatch(List<IPixel<ushort>> UniqueList, List<IPixel<ushort>> batch, bool useCpu,ulong length,int GPUCount=1)
     {
         List<int> indexes = [];
         foreach (IPixel<ushort> c in batch)
@@ -69,7 +69,15 @@ class Dungeness
         }
         else
         {
-            OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count,length);
+            if (GPUCount == 1)
+            {
+                OtherSeed = RandomGen.ILGPU1(indexes, UniqueList.Count, length);
+            }
+            else if (GPUCount == 2)
+            {
+                OtherSeed = RandomGen.ILGPU2(indexes, UniqueList.Count, length);
+            }
+            
         }
         //Console.WriteLine("Working " + OtherSeed);
         return OtherSeed;
@@ -177,7 +185,7 @@ class Dungeness
         }
         return found;
     }
-    public static void ProcCompressLargeImage(String path, String savePath, bool useCpu, int divideX,int divideY,int batchSize = -1, ulong Length = 999999)
+    public static void ProcCompressLargeImage(String path, String savePath, bool useCpu, int divideX,int divideY,int GpuCount, int batchSize = -1, ulong Length = 999999)
     {
         MagickImage sourceImage = new MagickImage(path);
         List<MagickImage> Subsections =ImageBatches.MultipleSubSectionImageUniform(sourceImage,divideX,divideY);
@@ -242,7 +250,7 @@ class Dungeness
 
             Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 16 }, (i, state, index) =>
             {
-                ulong seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length);
+                ulong seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length,GpuCount);
                 returnList[(int)index] = seedFound;
 
 
