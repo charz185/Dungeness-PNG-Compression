@@ -158,7 +158,7 @@ class RandomGen
 
 
         using var inputBuffer = accelerator.Allocate1D(batch2);
-        using var inputBuffer1 = accelerator.Allocate1D(batch2);
+        using var inputBuffer1 = accelerator1.Allocate1D(batch2);
 
         ulong offset = 0;
         ulong offset1 = (ulong)(length) * (ulong)(batch.Count);
@@ -172,7 +172,7 @@ class RandomGen
             var batch3 = inputBuffer.View.As2DDenseYView(dimXY);
 
             var dimXY1 = new Index2D(batch.Count, (int)length);
-            var batch23 = inputBuffer.View.As2DDenseYView(dimXY1);
+            var batch23 = inputBuffer1.View.As2DDenseYView(dimXY1);
 
             using var vv = accelerator.Allocate1D<int>(1);
             using var vv1 = accelerator1.Allocate1D<int>(1);
