@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StrandsPNGCompression")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+627532224d280a7d09257751c90b4fa82b8350f8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ce1d281bbbe6fdf43b9b4fb24666203c66a549d8")]
 [assembly: System.Reflection.AssemblyProductAttribute("StrandsPNGCompression")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StrandsPNGCompression")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

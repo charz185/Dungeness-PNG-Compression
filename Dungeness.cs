@@ -122,15 +122,15 @@ class Dungeness
                     binaryWriter.Write((Int16)unique.Count);
                     for (int i = 0; i < unique.Count; i++)
                     {
-                        binaryWriter.Write(unique[i].GetChannel(0));
-                        binaryWriter.Write(unique[i].GetChannel(1));
-                        binaryWriter.Write(unique[i].GetChannel(2));
-                        binaryWriter.Write(unique[i].GetChannel(3));
+                        binaryWriter.Write((byte)unique[i].GetChannel(0));
+                        binaryWriter.Write((byte)unique[i].GetChannel(1));
+                        binaryWriter.Write((byte)unique[i].GetChannel(2));
+                        binaryWriter.Write((byte)unique[i].GetChannel(3));
                     }
                     binaryWriter.Write((Int16)seeds.Count);
                     foreach (ulong i in seeds)
                     {
-                        binaryWriter.Write((UInt32)i);
+                        binaryWriter.Write((UInt16)i);
                     }
                 }
                 binaryWriter.Close();
@@ -185,6 +185,18 @@ class Dungeness
         }
         return found;
     }
+    private static int PixelListToInt(List<IPixel<ushort>> l)
+    {
+        int returnArray = l[0].ToColor().GetHashCode();
+        l.RemoveAt(0);
+        foreach(IPixel<ushort> x in l)
+        {
+            returnArray ^= x.ToColor().GetHashCode();
+        }
+
+        return returnArray;
+
+    }
     public static void ProcCompressLargeImage(String path, String savePath, bool useCpu, int divideX,int divideY,int GpuCount, int batchSize = -1, ulong Length = 999999)
     {
         MagickImage sourceImage = new MagickImage(path);
@@ -194,6 +206,7 @@ class Dungeness
         imgSize[0] = (int)sourceImage.Width;
         imgSize[1] = (int)sourceImage.Height;
         int index1 = 0;
+        Dictionary<int, ulong> foundDictionary = new Dictionary<int,ulong>();
         foreach (MagickImage subSection in Subsections)
         {
             Console.WriteLine(index1+"/"+Subsections.Count);
@@ -248,14 +261,26 @@ class Dungeness
             }
 
 
-            Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 16 }, (i, state, index) =>
+            Parallel.ForEach(list, (i, state, index) =>
             {
-                ulong seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length,GpuCount);
+                ulong seedFound = 0;
+                int i2 = PixelListToInt(i);
+                if (foundDictionary.ContainsKey(i2))
+                {
+                    seedFound = foundDictionary[i2];
+                    //Console.WriteLine(i2);
+                }
+                else
+                {
+                    seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length, GpuCount);
+                    foundDictionary.TryAdd(i2,seedFound);
+                }
                 returnList[(int)index] = seedFound;
-
 
                 //Console.WriteLine("Z" + index);
             });
+            Console.WriteLine();
+            //0
             subSectionsResults.Add([]);
             //UNIQUE
             subSectionsResults[subSectionsResults.Count - 1].Add(OldUnique);
