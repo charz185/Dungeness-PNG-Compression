@@ -13,6 +13,7 @@ using System.Diagnostics.Metrics;
 using ImageMagick;
 using System.ComponentModel;
 using System.Runtime.Remoting;
+using ILGPU.IR.Types;
 
 class Dungeness
 {
@@ -26,11 +27,11 @@ class Dungeness
         List<IPixel<ushort>> newPixelArray = [];
         //Bitmap img = new Bitmap(image);
         
-        for (int j = 0; j < img.Height; j++)
+        for (int j = 0; j < img.Width; j++)
         {
-            for (int i = 0; i < img.Width; i++)
+            for (int i = 0; i < img.Height; i++)
             {
-                newPixelArray.Add((IPixel<ushort>)img.GetPixels().GetPixel(i, j));
+                newPixelArray.Add((IPixel<ushort>)img.GetPixels().GetPixel(j, i));
             }
         }
         
@@ -114,8 +115,8 @@ class Dungeness
             using (BinaryWriter binaryWriter = new BinaryWriter(fileStream))
             {
                 binaryWriter.Write((Int16)(batchSize));
-                binaryWriter.Write((byte)imgSize[0]);
-                binaryWriter.Write((byte)imgSize[1]);
+                binaryWriter.Write((Int16)imgSize[0]);
+                binaryWriter.Write((Int16)imgSize[1]);
                 foreach (List<object> result in results) {
                     List<IPixel<ushort>> unique = (List<IPixel<ushort>>)result[0];
                     List<ulong> seeds = (List<ulong>)result[1];
@@ -130,12 +131,52 @@ class Dungeness
                     binaryWriter.Write((Int16)seeds.Count);
                     foreach (ulong i in seeds)
                     {
-                        binaryWriter.Write((UInt16)i);
+                        binaryWriter.Write((UInt32)i);
                     }
                 }
                 binaryWriter.Close();
             }
         }
+    }
+    private static List<Object> ReadLargeToBytes(String path)
+    {
+        int batchSize = 4;
+        uint[] imgSize = new uint[2];
+        List<List<MagickColor>> unique = [];
+        List<List<ulong>> seeds = [];
+
+
+        using (FileStream fileStream = new FileStream(path, FileMode.Open))
+        {
+            using (BinaryReader binaryReader = new BinaryReader(fileStream))
+            {
+                batchSize = binaryReader.ReadInt16();
+                imgSize[0] = (uint)binaryReader.ReadInt16();
+                imgSize[1] = (uint)binaryReader.ReadInt16();
+                while (binaryReader.BaseStream.Length > binaryReader.BaseStream.Position + 4)
+                {
+                    unique.Add([]);
+                    seeds.Add([]);
+                    int uniqueCount = binaryReader.ReadInt16();
+                    for (int i = 0; i < uniqueCount; i++)
+                    {
+                        ushort r = binaryReader.ReadByte();
+                        ushort g = binaryReader.ReadByte();
+                        ushort b = binaryReader.ReadByte();
+                        ushort a = binaryReader.ReadByte();
+                        unique[unique.Count - 1].Add(MagickColor.FromRgba((byte)r, (byte)g, (byte)b, (byte)a));
+                    }
+
+                    int seedCount = binaryReader.ReadInt16();
+                    for (int i = 0;i < seedCount; i++)
+                    {
+                        seeds[seeds.Count-1].Add((ulong)binaryReader.ReadUInt32());
+                    }
+                }
+            }
+        }
+        List<object> returnList = [batchSize, imgSize, unique, seeds];
+        return returnList;
     }
     private static List<object> readFromBin(String path)
     {
@@ -369,6 +410,58 @@ class Dungeness
         // saveList.AddRange(returnList);
         //File.WriteAllLines("result.txt", saveList);
         saveToBytes(OldUnique, returnList, savePath, batchSize, ImgSize);
+    }
+    public static void procDecompressLargeImg(string path, string output)
+    {
+        List<object> returns = ReadLargeToBytes(path);
+        int batchSize = (int)returns[0];
+        int[] imgSize = (int[])returns[1];
+        List<List<MagickColor>> Uniques = (List<List<MagickColor>>)returns[2];
+        Console.WriteLine(Uniques[0]);
+        List<List<ulong>> seeds = (List<List<ulong>>)returns[3];
+        List<List<MagickColor>> Pixels = [];
+        for (int z = 0; z < seeds.Count; z++)
+        {
+            Pixels.Add([]);
+            for (int i = 0; i < seeds[z].Count; i++)
+            {
+                RandomGen rnd = new RandomGen(seeds[z][i]);
+                uint[] indexes = rnd.nextBatch(Uniques[z].Count, batchSize);
+                foreach (int x in indexes)
+                {
+                    Pixels[z].Add(Uniques[z][x]);
+                }
+            }
+        }
+        Console.WriteLine(imgSize[0]);
+        using var img = new MagickImage(new MagickColor(0, 0, 0, 255), (uint)(imgSize[0]), (uint)(imgSize[1]));
+        //img.Resize((uint)imgSize[0]+1, (uint)imgSize[1]+1);
+
+        Console.WriteLine(Pixels.Count);
+        int index = 0;
+        foreach (List<MagickColor> z in Pixels)
+        {
+            Console.WriteLine(index);
+            int counter = 0;
+
+            int width = (imgSize[0] / (int)Math.Sqrt(Pixels.Count));
+            int height = (imgSize[1] / (int)Math.Sqrt(Pixels.Count));
+            int startingX = (index % (int)Math.Sqrt(Pixels.Count)) * width;
+            int startingY = (int)(index / (int)Math.Sqrt(Pixels.Count)) * height;
+            foreach (MagickColor x in z)
+            {
+
+                int y = startingY + (int)(counter/(width));
+                int x1 = (counter % (width)) + startingX;
+                img.GetPixels().GetPixel(x1, y).SetChannel(0, x.R);
+                img.GetPixels().GetPixel(x1, y).SetChannel(1, x.G);
+                img.GetPixels().GetPixel(x1, y).SetChannel(2, x.B);
+                img.GetPixels().GetPixel(x1, y).SetChannel(3, x.A);
+                counter++;
+            }
+            index++;
+        }
+        img.Write(output);
     }
     public static void procDecompressImg(string path, string output)
     {
