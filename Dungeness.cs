@@ -260,25 +260,35 @@ class Dungeness
                 returnList.Add(0);
             }
 
-
-            Parallel.ForEach(list, (i, state, index) =>
+            int completed = 0;
+            Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = batchSize/4*GpuCount },(i, state, index) =>
             {
                 ulong seedFound = 0;
                 int i2 = PixelListToInt(i);
                 if (foundDictionary.ContainsKey(i2))
                 {
-                    seedFound = foundDictionary[i2];
+                    foundDictionary.TryGetValue(i2,out seedFound);
                     //Console.WriteLine(i2);
                 }
                 else
                 {
                     seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length, GpuCount);
-                    foundDictionary.TryAdd(i2,seedFound);
+                    try
+                    {
+                        foundDictionary.TryAdd(i2, seedFound);
+                    }
+                    catch{
+                        ;
+                    }
                 }
                 returnList[(int)index] = seedFound;
-
-                //Console.WriteLine("Z" + index);
+                completed++;
+                if (completed % (batchSize / 2 * GpuCount) == 0)
+                {
+                    Console.WriteLine("Completed: " + completed + "/" + list.Count);
+                }
             });
+
             Console.WriteLine();
             //0
             subSectionsResults.Add([]);
