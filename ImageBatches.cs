@@ -16,10 +16,11 @@ class ImageBatches
     public static List<MagickImage> MultipleSubSectionImageUniform(MagickImage imgSource, int width, int height)
     {
         List<MagickImage> Subsections = [];
-        for (int y = 0;y < imgSource.Height/ height; y++)
-        {
+        for (int y = 0; y < imgSource.Height / height; y++)
+        { 
             for (int x = 0; x < imgSource.Width / width; x++)
             {
+        
                 MagickImage subsection =  SingleSubSectionImage(imgSource, x* width, y*height, width, height);
                 Subsections.Add(subsection);
             }
@@ -27,4 +28,3 @@ class ImageBatches
         return Subsections;
     }
 }
-

@@ -20,7 +20,7 @@ internal static class StrandsPNGCompression
     public static void Main(string[] args)
     {
         bool running = true;
-        Dungeness.procDecompressLargeImg("h8.bin","c.png");
+        //Dungeness.procDecompressImg("t8.bin","c.png");
         while (running)
         {
             Console.WriteLine("Path?");
@@ -39,7 +39,8 @@ internal static class StrandsPNGCompression
             {
                 Console.WriteLine("GPU Count?: ");
                 int gpuCount = Convert.ToInt16(Console.ReadLine());
-                Dungeness.ProcCompressLargeImage(path, OutPath, false, 64, 64, gpuCount, batchSize, length);
+                //Dungeness.ProcCompressImg(path,OutPath,false,batchSize,length);
+                Dungeness.ProcCompressLargeImage(path, OutPath, false, 32, 32, gpuCount, batchSize, length);
             }
             else
             {
