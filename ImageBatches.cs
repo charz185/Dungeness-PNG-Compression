@@ -10,6 +10,7 @@ class ImageBatches
     public static MagickImage SingleSubSectionImage(MagickImage imgSource, int x, int y, int sizeX, int sizeY)
     {
         MagickImage img = new MagickImage(imgSource);
+        img.AutoOrient();
         img.Crop(new MagickGeometry(x, y, (uint)sizeX, (uint)sizeY));
         return img;
     }

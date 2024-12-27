@@ -20,56 +20,48 @@ using static System.Net.Mime.MediaTypeNames;
 class RandomGen
 {
     private long last;
-    private long inc;
 
     public RandomGen(ulong seed)
     {
-        this.last = (long) seed;
-        this.inc = (long) seed;
+        this.last = (long)seed;
     }
 
-    public long nextInt(int max)
+    private uint nextInt(int max)
     {
         this.last ^= (this.last << 13);
         this.last ^= (this.last >>> 17);
         this.last ^= (this.last << 5);
-        return Math.Abs(this.last % max);
+        return (UInt32)(Math.Abs(this.last % max));
+    
     }
-    public uint[] nextBatch(int max, int amt) 
+    public static uint[] nextBatch(ulong seed,int max, int amt) 
     {
-        uint[] ints = new uint[amt];
+        List<uint> ints = [];
+        RandomGen rnd = new RandomGen(seed);
         for (int i = 0; i < amt; i++)
         {
-            ints[i] = (uint)(nextInt(max));
+            ints.Add(rnd.nextInt(max));
+           //Console.Write(ints[i]);
         }
-        return ints;
+        //Console.WriteLine();
+        return ints.ToArray();
     }
-    public void setLast(ulong seed) { this.last = (long)seed; }
-    public static Int64 nextSeed(List<int> indexes,int max)
+    public static ulong nextSeed(List<int> indexes,int max)
     {
-        long max1 = long.MaxValue-1;
-        Int64  result = -1;
+        ulong max1 = ulong.MaxValue-1;
+        ulong  result = 0;
         uint[] indexes2 = new uint[indexes.Count];
         for (int i = 0; i < indexes.Count; i++)
         { 
             indexes2[i] = (uint)indexes[i];
         }
         uint[] new1 = new uint[indexes.Count];
-        for (int i = 0; i < max1; i++)
+        for (ulong i = 0; i < max1; i++)
         {
-            RandomGen rnd = new RandomGen((ulong)i);
-            new1 = rnd.nextBatch(max, indexes.Count);
-            bool found = true;
+            new1 = RandomGen.nextBatch(i,max, indexes.Count);
 
-            for (int z = 0; z < new1.Length; z++)
-            {
-                if (indexes2[z] != new1[z])
-                {
-                    found = false;
-                    break;
-                }
-            }
-            if (found)
+            
+            if (indexes2.ToList().SequenceEqual(new1.ToList()))
             {
                 result = i;
                 break;
@@ -81,8 +73,7 @@ class RandomGen
     }
     public static bool checkIfSeedTrue(ulong seed, uint[] batch, int max,int batchSize)
     {
-        RandomGen rnd = new RandomGen((ulong)seed);
-        if (rnd.nextBatch(max,batchSize).SequenceEqual(batch)) { return true; }
+        if (RandomGen.nextBatch(seed,max,batchSize).SequenceEqual(batch)) { return true; }
         return false;
 
     }
@@ -94,16 +85,21 @@ class RandomGen
         int DeviceCount = context.GetCudaDevices().Count;
         Device d = context.GetCudaDevices()[0];
         using var accelerator = d.CreateAccelerator(context);
-        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D,int,ArrayView2D<int,Stride2D.DenseY>,ArrayView1D<int, Stride1D.Dense>, ulong>(Kernel4);
+        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D,int,ArrayView2D<uint,Stride2D.DenseY>,ArrayView1D<int, Stride1D.Dense>, ulong>(Kernel4);
         using var batch1 = accelerator.Allocate1D<int>(batch.Count);
         batch1.CopyFromCPU(batch.ToArray());
 
         ulong seed2 = 0;
-        var batch2 = new int[(ulong)(length * (ulong)batch.Count)];
+        var batch2 = new uint[(ulong)(length * (ulong)batch.Count)];
         using var inputBuffer = accelerator.Allocate1D(batch2);
         ulong offset = 0;
 
-        int[,] finalBatch = new int [length, batch.Count];
+        uint[,] finalBatch = new uint [length, batch.Count];
+        List<uint> batch12 = [];
+        foreach(int i in batch)
+        {
+            batch12.Add((uint)i);
+        }
         while (seed2 == 0)
         {
             inputBuffer.MemSetToZero();
@@ -113,21 +109,19 @@ class RandomGen
             kernel((int)length, max, batch3, batch1.View,offset);
 
             batch3.CopyToCPU(finalBatch);
-            if (seed2 != 0) {
-                //Console.WriteLine(seed1[0]+" : "+offset+" : "+seed2);
-                    }
             for (int i = 0; i < (int)length; i++)
             {
-                bool found = true;
+
                 uint[] uints = new uint[batch.Count];
-                List<int> ints2 = [];
+                List<uint> ints2 = [];
+
                 for (int z = 0; z < batch.Count; z++)
                 {
-                    uints[z] = (uint)finalBatch[i,z];
+                    uints[z] = batch12[z];
                     ints2.Add(finalBatch[i,z]);
                 }
 
-                if (ints2.SequenceEqual(batch) && checkIfSeedTrue((ulong)i+offset,uints,max,batch.Count))
+                if (ints2.SequenceEqual(batch12) && checkIfSeedTrue((ulong)i+offset,uints,max,batch.Count))
                 {
                     seed2 = (ulong)i + offset;
                     break;
@@ -155,8 +149,8 @@ class RandomGen
         using var accelerator = d.CreateAccelerator(context);
         using var accelerator1 = d1.CreateAccelerator(context);
 
-        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D, int, ArrayView2D<int, Stride2D.DenseY>, ArrayView1D<int, Stride1D.Dense>, ulong>(Kernel4);
-        var kernel1 = accelerator1.LoadAutoGroupedStreamKernel<Index1D, int, ArrayView2D<int, Stride2D.DenseY>, ArrayView1D<int, Stride1D.Dense>, ulong>(Kernel4);
+        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D, int, ArrayView2D<uint, Stride2D.DenseY>, ArrayView1D<int, Stride1D.Dense>, ulong>(Kernel4);
+        var kernel1 = accelerator1.LoadAutoGroupedStreamKernel<Index1D, int, ArrayView2D<uint, Stride2D.DenseY>, ArrayView1D<int, Stride1D.Dense>, ulong>(Kernel4);
 
         using var ints = accelerator.Allocate1D<int>(batch.Count);
         using var batch1 = accelerator.Allocate1D<int>(batch.Count);
@@ -174,7 +168,7 @@ class RandomGen
         int[] seed = new int[1];
         int[] seed1 = new int[1];
         ulong seed2 = 0;
-        var batch2 = new int[(ulong)(length * (ulong)batch.Count)];
+        var batch2 = new uint[(ulong)(length * (ulong)batch.Count)];
 
 
 
@@ -184,8 +178,8 @@ class RandomGen
         ulong offset = 0;
         ulong offset1 = (ulong)(length) * (ulong)(batch.Count);
 
-        int[,] finalBatch = new int[length, batch.Count];
-        int[,] finalBatch1 = new int[length, batch.Count];
+        uint[,] finalBatch = new uint[length, batch.Count];
+        uint[,] finalBatch1 = new uint[length, batch.Count];
         while (seed2 == 0)
         {
             //Console.WriteLine(offset*(ulong)batch.Count*4);
@@ -241,15 +235,15 @@ class RandomGen
 
 
     }
-    static void Kernel4(Index1D i, int max, ArrayView2D<int, Stride2D.DenseY> batch1, ArrayView1D<int, Stride1D.Dense> batch, ulong offset)
+    static void Kernel4(Index1D i, int max, ArrayView2D<uint, Stride2D.DenseY> batch1, ArrayView1D<int, Stride1D.Dense> batch, ulong offset)
     {
-        long last = i + (long)offset;
+        ulong last = (ulong)i + offset;
         for (int z = 0; z < batch.Length; z++)
         {
             last ^= (last << 13);
             last ^= (last >>> 17);
             last ^= (last << 5);
-            batch1[new Index2D(i, z)] = (int)Math.Abs(last % max);
+            batch1[new Index2D(i, z)] = (UInt32)(last % (ulong)max);
         }
     }
     static void Kernel3(Index1D i,int max,ArrayView2D<int,Stride2D.DenseY> batch1, ArrayView1D<int,Stride1D.Dense> batch, ArrayView1D<int, Stride1D.Dense> result,ulong offset)
