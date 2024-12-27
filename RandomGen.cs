@@ -198,33 +198,37 @@ class RandomGen
             kernel((int)length, max, batch3, batch1.View, offset);
             kernel1((int)length, max, batch23, batchTwo.View, offset1);
 
-
+            List<uint> batch12 = [];
+            foreach (int i in batch)
+            {
+                batch12.Add((uint)i);
+            }
             batch3.CopyToCPU(finalBatch);
             batch23.CopyToCPU(finalBatch1);
             for (int i = 0; i < (int)length; i++)
             {
                 bool found = true;
                 bool found1 = true;
+                uint[] uints = new uint[batch.Count];
+                List<uint> ints2 = [];
+                List<uint> ints12 = [];
+
                 for (int z = 0; z < batch.Count; z++)
                 {
-                    if ((uint)batch[z] != finalBatch[i, z])
-                    {
-                        found = false;
-                        break;
-                    }
-                    if ((uint)batch[z] != finalBatch1[i, z])
-                    {
-                        found1 = false;
-                        break;
-                    }
+                    uints[z] = batch12[z];
+                    ints2.Add(finalBatch[i, z]);
+                    ints12.Add(finalBatch1[i, z]);
                 }
-                if (found)
+
+                if (ints2.SequenceEqual(batch12) && checkIfSeedTrue((ulong)i + offset, uints, max, batch.Count))
                 {
                     seed2 = (ulong)i + offset;
-                } else if (found1)
+                    break;
+                } else if (ints12.SequenceEqual(batch12) && checkIfSeedTrue((ulong)i + offset1, uints, max, batch.Count))
                 {
-                    seed2 = (ulong)i + offset;
+
                 }
+
             }
 
 
