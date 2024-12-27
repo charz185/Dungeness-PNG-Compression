@@ -28,10 +28,11 @@ class RandomGen
 
     private uint nextInt(int max)
     {
+        uint newI = (UInt32)(Math.Abs(this.last % max));
         this.last ^= (this.last << 13);
         this.last ^= (this.last >>> 17);
         this.last ^= (this.last << 5);
-        return (UInt32)(Math.Abs(this.last % max));
+        return newI;
     
     }
     public static uint[] nextBatch(ulong seed,int max, int amt) 
@@ -40,10 +41,12 @@ class RandomGen
         RandomGen rnd = new RandomGen(seed);
         for (int i = 0; i < amt; i++)
         {
-            ints.Add(rnd.nextInt(max));
-           //Console.Write(ints[i]);
+            uint newInt = rnd.nextInt(max);
+
+            ints.Add(newInt);
+            Console.Write(newInt);
         }
-        //Console.WriteLine();
+        Console.WriteLine();
         return ints.ToArray();
     }
     public static ulong nextSeed(List<int> indexes,int max)
@@ -117,11 +120,10 @@ class RandomGen
 
                 for (int z = 0; z < batch.Count; z++)
                 {
-                    uints[z] = batch12[z];
                     ints2.Add(finalBatch[i,z]);
                 }
 
-                if (ints2.SequenceEqual(batch12) && checkIfSeedTrue((ulong)i+offset,uints,max,batch.Count))
+                if (ints2.SequenceEqual(batch12))
                 {
                     seed2 = (ulong)i + offset;
                     break;
