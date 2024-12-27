@@ -220,13 +220,14 @@ class RandomGen
                     ints12.Add(finalBatch1[i, z]);
                 }
 
-                if (ints2.SequenceEqual(batch12) && checkIfSeedTrue((ulong)i + offset, uints, max, batch.Count))
+                if (checkIfSeedTrue((ulong)i + offset, uints, max, batch.Count))
                 {
                     seed2 = (ulong)i + offset;
                     break;
-                } else if (ints12.SequenceEqual(batch12) && checkIfSeedTrue((ulong)i + offset1, uints, max, batch.Count))
+                } else if (checkIfSeedTrue((ulong)i + offset1, uints, max, batch.Count))
                 {
-
+                    seed2 = (ulong)i + offset1;
+                    break;
                 }
 
             }
