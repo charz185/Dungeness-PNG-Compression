@@ -176,7 +176,7 @@ class RandomGen
         using var inputBuffer1 = accelerator1.Allocate1D(batch2);
 
         ulong offset = 0;
-        ulong offset1 = (ulong)(length) * (ulong)(batch.Count);
+        ulong offset1 = (ulong)(length);
 
         uint[,] finalBatch = new uint[length, batch.Count];
         uint[,] finalBatch1 = new uint[length, batch.Count];
@@ -207,12 +207,12 @@ class RandomGen
                 bool found1 = true;
                 for (int z = 0; z < batch.Count; z++)
                 {
-                    if ((int)batch[z] != (int)finalBatch[i, z])
+                    if ((uint)batch[z] != finalBatch[i, z])
                     {
                         found = false;
                         break;
                     }
-                    if ((int)batch[z] != (int)finalBatch1[i, z])
+                    if ((uint)batch[z] != finalBatch1[i, z])
                     {
                         found1 = false;
                         break;
@@ -228,8 +228,8 @@ class RandomGen
             }
 
 
-            offset += 2*(ulong)(length) * (ulong)(batch.Count);
-            offset1 += 2*(ulong)(length) * (ulong)(batch.Count);
+            offset += 2*(ulong)(length);
+            offset1 += 2*(ulong)(length);
         }
         return seed2;
 
