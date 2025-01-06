@@ -61,12 +61,18 @@ class Dungeness
     private static ulong FindSeedOfBatch(List<IPixel<byte>> UniqueList, List<IPixel<byte>> batch, bool useCpu,ulong length,int GPUCount=1)
     {
         List<int> indexes = [];
+        List<IMagickColor<byte>> Unique = [];
+        foreach(IPixel<byte> pixel in UniqueList)
+        {
+            Unique.Add(pixel.ToColor());
+        }
+        Unique.Distinct();
         foreach (IPixel<byte> c in batch)
         {
-            indexes.Add(UniqueList.IndexOf(c));
+            indexes.Add(Unique.IndexOf(c.ToColor()));
             Console.Write(indexes[indexes.Count - 1]);
         }
-        Console.WriteLine();
+        Console.WriteLine("");
         ulong OtherSeed = 0;
         if (useCpu)
         {
@@ -85,7 +91,7 @@ class Dungeness
             
         }
         Console.WriteLine("Working " + OtherSeed);
-        uint[] arr = RandomGen.nextBatch(OtherSeed,UniqueList.Count,batch.Count);
+        //uint[] arr = RandomGen.nextBatch(OtherSeed,UniqueList.Count,batch.Count);
         //Console.WriteLine("Last"+arr[batch.Count-1]);
         return OtherSeed;
     }
@@ -126,8 +132,8 @@ class Dungeness
                 binaryWriter.Write((Int16)divideX);
                 foreach (List<object> result in results) {
                     List<IPixel<byte>> unique = (List<IPixel<byte>>)result[0];
-                    List<ulong> seeds = (List<ulong>)result[1];
-                    binaryWriter.Write((Int16)unique.Count);
+                    List<uint> seeds = (List<uint>)result[1];
+                    binaryWriter.Write((Int32)unique.Count);
                     for (int i = 0; i < unique.Count; i++)
                     {
                         binaryWriter.Write((Byte)unique[i].GetChannel(0));
@@ -135,8 +141,8 @@ class Dungeness
                         binaryWriter.Write((Byte)unique[i].GetChannel(2));
                         binaryWriter.Write((Byte)unique[i].GetChannel(3));
                     }
-                    binaryWriter.Write((Int16)seeds.Count);
-                    foreach (ulong i in seeds)
+                    binaryWriter.Write((Int32)seeds.Count);
+                    foreach (uint i in seeds)
                     {
                         Console.WriteLine(i);
                         binaryWriter.Write((UInt32)i);
@@ -167,7 +173,7 @@ class Dungeness
                     unique.Add([]);
                     seeds.Add([]);
                     Console.WriteLine(seeds.Count);
-                    int uniqueCount = binaryReader.ReadInt16();
+                    int uniqueCount = binaryReader.ReadInt32();
                     for (int i = 0; i < uniqueCount; i++)
                     {
                         byte r = binaryReader.ReadByte();
@@ -177,7 +183,7 @@ class Dungeness
                         unique[unique.Count - 1].Add(MagickColor.FromRgba((byte)r, (byte)g, (byte)b, (byte)a));
                     }
 
-                    int seedCount = binaryReader.ReadInt16();
+                    int seedCount = binaryReader.ReadInt32();
                     for (int i = 0; i < seedCount; i++)
                     {
                         seeds[seeds.Count-1].Add((ulong)binaryReader.ReadUInt32());
@@ -212,7 +218,7 @@ class Dungeness
                     byte a = binaryReader.ReadByte();
                     unique.Add(MagickColor.FromRgba((byte)r,(byte)g, (byte)b,(byte)a));
                 }
-                while (binaryReader.BaseStream.Length > binaryReader.BaseStream.Position +4)
+                while (binaryReader.BaseStream.Length >= binaryReader.BaseStream.Position +4)
                 {
                     seeds.Add((ulong)binaryReader.ReadUInt32());
                     //Console.WriteLine(seeds.Count);
@@ -235,21 +241,12 @@ class Dungeness
         }
         return found;
     }
-    private static int PixelListToInt(List<IPixel<byte>> l)
+    private static MagickColor[] PixelListToArray(List<IPixel<byte>> l)
     {
-        int returnArray = l[0].ToColor().GetHashCode();
-        l.RemoveAt(0);
-        int index = 1;
-        foreach(IPixel<byte> x in l)
+        MagickColor[] returnArray = new MagickColor[l.Count];
+        for (int i = 0; i < l.Count; i++)
         {
-            if (index % 2 == 1)
-            {
-                returnArray ^= x.ToColor().GetHashCode();
-            } else
-            {
-                returnArray *= x.ToColor().GetHashCode();
-            }
-            index++;
+            returnArray[i] = (MagickColor)l[i].ToColor();
         }
 
         return returnArray;
@@ -259,12 +256,13 @@ class Dungeness
     {
         MagickImage sourceImage = new MagickImage(path);
         List<MagickImage> Subsections =ImageBatches.MultipleSubSectionImageUniform(sourceImage,divideX,divideY);
+        Console.WriteLine(Subsections.Count);
         List<List<object>> subSectionsResults = [];
         int[] imgSize = new int[2];
         imgSize[0] = (int)sourceImage.Width;
         imgSize[1] = (int)sourceImage.Height;
         int index1 = 0;
-        Dictionary<int, ulong> foundDictionary = new Dictionary<int,ulong>();
+        Dictionary<MagickColor[], ulong> foundDictionary = new Dictionary<MagickColor[],ulong>();
         foreach (MagickImage subSection in Subsections)
         {
             Console.WriteLine(index1+"/"+Subsections.Count);
@@ -307,31 +305,35 @@ class Dungeness
             }
 
             Console.WriteLine("Unique Count: "+OldUnique.Count);
-            List<ulong> returnList = [];
+            List<uint> returnList = [];
             List<List<IPixel<byte>>> list = [];
             for (int i = 0; i < Old.Count; i += batchSize)
             {
                 list.Add(Old.GetRange(i, batchSize));
                 returnList.Add(0);
             }
-
             int completed = 0;
-            Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 16 },(i, state, index) =>
+            Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 4 },(i, state, index) =>
             {
                 ulong seedFound = 0;
-                int i2 = PixelListToInt(i);
-                if (foundDictionary.ContainsKey(i2))
+                Console.WriteLine("Count" + i.Count);
+                MagickColor[] i2 = PixelListToArray(i);
+                if (foundDictionary.TryGetValue(i2, out ulong value))
                 {
-                    seedFound = foundDictionary[i2];
+                    //seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length, GpuCount);
+                    seedFound = value;
                 }
                 else
                 {
                     seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length, GpuCount);
-                    
-                    foundDictionary.TryAdd(i2, seedFound);
+                    try
+                    {
+                        foundDictionary.TryAdd(i2, seedFound);
+                    }
+                    catch (Exception e) {; }
                     
                 }
-                returnList[(int)index] = seedFound;
+                returnList[(int)index] = (uint)seedFound;
 
                 completed++;
                 if (completed % (8) == 0)
@@ -349,27 +351,14 @@ class Dungeness
             subSectionsResults[subSectionsResults.Count - 1].Add(returnList);
             index1++;
         }
-        foreach (var subSection in subSectionsResults)
-        {
-            foreach(ulong seed in (List<ulong>)subSection[1])
-            {
-                List<IPixel<byte>> uniques = subSection[0] as List<IPixel<byte>>;
-                uint[] l = RandomGen.nextBatch(seed,uniques.Count, batchSize);
-                foreach (uint uint1 in l)
-                {
-                    Console.Write(uint1);
-                }
-                Console.WriteLine();
-            }
-        }
-
+        
         saveLargeToBytes(subSectionsResults, savePath, batchSize, imgSize,divideX);
         
     }
     public static void ProcCompressImg(String path, String savePath, bool useCpu,int batchSize = -1,ulong Length = 999999 )
     {
         List<IPixel<byte>> Old = MakeArrayFromImage(path);
-        Dictionary<int, ulong> foundDictionary = new Dictionary<int, ulong>();
+        Dictionary<MagickColor[], ulong> foundDictionary = new Dictionary<MagickColor[], ulong>();
         using var x = new MagickImage(path);
         int[] ImgSize = new int[2];
         ImgSize[0] = (int)x.Width;
@@ -412,33 +401,26 @@ class Dungeness
         }
         
         Console.WriteLine(OldUnique.Count);
-        
-        List<ulong> returnList = [];
-        List<List<IPixel<byte>>> list = new();
-        List<IPixel<byte>> batchCurrent = [];
-        int count = 0;
-        foreach(IPixel<byte> p in Old){
-            batchCurrent.Add(p);
 
-            if (batchCurrent.Count == batchSize)
-            {
-                list.Add(batchCurrent.GetRange(0,batchCurrent.Count));
-                returnList.Add(0);
-                batchCurrent.Clear();
-            }
-            count++;
+        List<ulong> returnList = [];
+        List<List<IPixel<byte>>> list = [];
+        for (int i = 0; i < Old.Count; i += batchSize)
+        {
+            list.Add(Old.GetRange(i, batchSize));
+            returnList.Add(0);
         }
 
         int completed = 0;
-        //Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (i,state,index) =>
-        foreach(List<IPixel<byte>> i in list)
+        Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (i, state, index) =>
+        //foreach(List<IPixel<byte>> i in list)
         {
             ulong seedFound = 0;
             Console.WriteLine(i.Count);
-            int i2 = PixelListToInt(i);
-            if (foundDictionary.ContainsKey(i2))
+            MagickColor[] i2 = PixelListToArray(i);
+            if (foundDictionary.TryGetValue(i2, out ulong value))
             {
-                seedFound = foundDictionary[i2];
+                //seedFound = FindSeedOfBatch(OldUnique, i, useCpu, Length, GpuCount);
+                seedFound = value;
             }
             else
             {
@@ -452,18 +434,15 @@ class Dungeness
                     ;
                 }
             }
-            
-            returnList.Add(seedFound);
+
+            returnList[(int)index] = seedFound;
             completed++;
             if (completed % (batchSize * 1) == 0)
             {
                 Console.WriteLine("Completed: " + completed + "/" + list.Count);
             }
-        }
+        });
 
-        // saveList.AddRange(returnList);
-
-        //File.WriteAllLines("result.txt", saveList);
         List<ulong> return2 = [];
         foreach (var i in returnList)
         {
@@ -504,7 +483,7 @@ class Dungeness
         Console.WriteLine(imgSize[0]);
         using var img = new MagickImage(new MagickColor(0, 0, 0, 0), (uint)(imgSize[0]), (uint)(imgSize[1]));
         int subSectionsPerSide = imgSize[0]/Convert.ToInt32(returns[4]);
-        //img.Format = MagickFormat.Png32;
+        img.Format = MagickFormat.Png64;
         //img.Transparent(new MagickColor(0, 0, 0, 255));
 
         Console.WriteLine(Pixels.Count);
@@ -548,6 +527,7 @@ class Dungeness
             uint[] indexes = RandomGen.nextBatch(seeds[i],Uniques.Count, batchSize);
             foreach (int x in indexes)
             {
+                Console.WriteLine("a"+x);
                 Pixels.Add(Uniques[x]);
             }
         }

@@ -19,19 +19,20 @@ using static System.Net.Mime.MediaTypeNames;
 // https://stackoverflow.com/a/13533895
 class RandomGen
 {
-    private long last;
+    private ulong last;
 
     public RandomGen(ulong seed)
     {
-        this.last = (long)seed;
+        this.last = seed;
     }
 
     private uint nextInt(int max)
     {
-        uint newI = (UInt32)(Math.Abs(this.last % max));
-        this.last ^= (this.last << 13);
-        this.last ^= (this.last >>> 17);
-        this.last ^= (this.last << 5);
+        
+        this.last ^= (this.last << 21);
+        this.last ^= (this.last >>> 35);
+        this.last ^= (this.last << 4);
+        uint newI = (UInt32)(this.last % (ulong)max);
         return newI;
     
     }
@@ -44,9 +45,9 @@ class RandomGen
             uint newInt = rnd.nextInt(max);
 
             ints.Add(newInt);
-            Console.Write(newInt);
+           // Console.Write(newInt);
         }
-        Console.WriteLine();
+       // Console.WriteLine();
         return ints.ToArray();
     }
     public static ulong nextSeed(List<int> indexes,int max)
@@ -211,22 +212,20 @@ class RandomGen
             {
                 bool found = true;
                 bool found1 = true;
-                uint[] uints = new uint[batch.Count];
                 List<uint> ints2 = [];
                 List<uint> ints12 = [];
 
                 for (int z = 0; z < batch.Count; z++)
                 {
-                    uints[z] = batch12[z];
                     ints2.Add(finalBatch[i, z]);
                     ints12.Add(finalBatch1[i, z]);
                 }
 
-                if (checkIfSeedTrue((ulong)i + offset, uints, max, batch.Count))
+                if (ints2.SequenceEqual(batch12))
                 {
                     seed2 = (ulong)i + offset;
                     break;
-                } else if (checkIfSeedTrue((ulong)i + offset1, uints, max, batch.Count))
+                } else if (ints12.SequenceEqual(batch12))
                 {
                     seed2 = (ulong)i + offset1;
                     break;
@@ -245,11 +244,13 @@ class RandomGen
     static void Kernel4(Index1D i, int max, ArrayView2D<uint, Stride2D.DenseY> batch1, ArrayView1D<int, Stride1D.Dense> batch, ulong offset)
     {
         ulong last = (ulong)i + offset;
+        //batch1[new Index2D(i, 0)] = (UInt32)(last % (ulong)max);
         for (int z = 0; z < batch.Length; z++)
         {
-            last ^= (last << 13);
-            last ^= (last >>> 17);
-            last ^= (last << 5);
+            
+            last ^= (last << 21);
+            last ^= (last >>> 35);
+            last ^= (last << 4);
             batch1[new Index2D(i, z)] = (UInt32)(last % (ulong)max);
         }
     }

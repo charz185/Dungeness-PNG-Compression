@@ -20,7 +20,7 @@ internal static class StrandsPNGCompression
     public static void Main(string[] args)
     {
         bool running = true;
-        Dungeness.procDecompressLargeImg("c16.bin","c.png");
+        
         while (running)
         {
             Console.WriteLine("Path?");
@@ -50,9 +50,10 @@ internal static class StrandsPNGCompression
             //Dungeness.procDecompressLargeImg(OutPath, "c.png");
 
             Console.WriteLine(sw.ElapsedMilliseconds + "ms");
-
+            Dungeness.procDecompressLargeImg(OutPath, "c.png");
             Console.WriteLine("Exit? (y/n)");
             String exit = Console.ReadLine();
+
             if (exit == "y")
             {
                 running = false;
