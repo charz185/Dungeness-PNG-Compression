@@ -50,7 +50,7 @@ internal static class StrandsPNGCompression
             //Dungeness.procDecompressLargeImg(OutPath, "c.png");
 
             Console.WriteLine(sw.ElapsedMilliseconds + "ms");
-            Dungeness.procDecompressLargeImg(OutPath, "c.png");
+            Dungeness.procDecompressLargeImg("h16.bin", "c.png");
             Console.WriteLine("Exit? (y/n)");
             String exit = Console.ReadLine();
 

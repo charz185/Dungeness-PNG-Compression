@@ -411,7 +411,7 @@ class Dungeness
         }
 
         int completed = 0;
-        Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (i, state, index) =>
+        Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 16 }, (i, state, index) =>
         //foreach(List<IPixel<byte>> i in list)
         {
             ulong seedFound = 0;
@@ -431,7 +431,7 @@ class Dungeness
                 }
                 catch
                 {
-                    ;
+                    Console.WriteLine("FAIL");
                 }
             }
 
