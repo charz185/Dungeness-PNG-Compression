@@ -70,14 +70,7 @@ class RandomGen
             }
         }
 
-        return result;
-        
-    }
-    public static bool checkIfSeedTrue(ulong seed, uint[] batch, int max,int batchSize)
-    {
-        if (RandomGen.nextBatch(seed,max,batchSize).SequenceEqual(batch)) { return true; }
-        return false;
-
+        return result;  
     }
     public static ulong ILGPU1(List<int> batch,int max,ulong length)
     {

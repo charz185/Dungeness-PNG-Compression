@@ -136,10 +136,10 @@ class Dungeness
                     binaryWriter.Write((Int32)unique.Count);
                     for (int i = 0; i < unique.Count; i++)
                     {
-                        binaryWriter.Write((Byte)unique[i].GetChannel(0));
-                        binaryWriter.Write((Byte)unique[i].GetChannel(1));
-                        binaryWriter.Write((Byte)unique[i].GetChannel(2));
-                        binaryWriter.Write((Byte)unique[i].GetChannel(3));
+                        binaryWriter.Write((byte)unique[i].GetChannel(0));
+                        binaryWriter.Write((byte)unique[i].GetChannel(1));
+                        binaryWriter.Write((byte)unique[i].GetChannel(2));
+                        binaryWriter.Write((byte)unique[i].GetChannel(3));
                     }
                     binaryWriter.Write((Int32)seeds.Count);
                     foreach (uint i in seeds)
@@ -252,22 +252,6 @@ class Dungeness
 
         return returnArray;
 
-    }
-    class SameKeyPixels : EqualityComparer<List<MagickColor>>
-    {
-        public override bool Equals(List<MagickColor>? b1, List<MagickColor>? b2)
-        {
-            if (b1 == null && b2 == null)
-                return true;
-            else if (b1 == null || b2 == null)
-                return false;
-            return b1.SequenceEqual(b2);
-        }
-
-        public override int GetHashCode(List<MagickColor> bx)
-        {
-            return bx.GetHashCode();
-        }
     }
     public static void ProcCompressLargeImage(String path, String savePath, bool useCpu, int divideX,int divideY,int GpuCount, int batchSize = -1, ulong Length = 999999)
     {
