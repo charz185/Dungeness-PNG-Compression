@@ -25,7 +25,6 @@ class RandomGen
     {
         this.last = seed;
     }
-
     private uint nextInt(int max)
     {
         
@@ -36,6 +35,8 @@ class RandomGen
         return newI;
     
     }
+
+
     public static uint[] nextBatch(ulong seed,int max, int amt) 
     {
         List<uint> ints = [];
@@ -43,11 +44,8 @@ class RandomGen
         for (int i = 0; i < amt; i++)
         {
             uint newInt = rnd.nextInt(max);
-
             ints.Add(newInt);
-           // Console.Write(newInt);
         }
-       // Console.WriteLine();
         return ints.ToArray();
     }
     public static ulong nextSeed(List<int> indexes,int max)
@@ -116,28 +114,8 @@ class RandomGen
             ResultBatch1.CopyToCPU(resultSeed);
             if (resultSeed[0] != 0)
             {
-                Console.WriteLine("aaa"+(ulong)resultSeed[0]+offset);
                 seed2 = (ulong)resultSeed[0]+offset;
             }
-            /*
-            batch3.CopyToCPU(finalBatch);
-            for (int i = 0; i < (int)length; i++)
-            {
-
-                uint[] uints = new uint[batch.Count];
-                List<uint> ints2 = [];
-
-                for (int z = 0; z < batch.Count; z++)
-                {
-                    ints2.Add(finalBatch[i,z]);
-                }
-
-                if (ints2.SequenceEqual(batch12))
-                {
-                    seed2 = (ulong)i + offset;
-                    break;
-                }
-                */
             offset += (ulong)(length);
         }
 
@@ -272,9 +250,8 @@ class RandomGen
 
                 if (found)
                 {
-                    Atomic.CompareExchange(ref result[0],0 ,(int)i);
+                    Atomic.Exchange(ref result[0], (int)i);
                 }
-
             }
         }
 

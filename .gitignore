@@ -16,3 +16,4 @@ obj/Release/net8.0/StrandsPNGCompression.pdb
 obj/Release/net8.0/StrandsPNGCompression.sourcelink.json
 obj/StrandsPNGCompression.csproj.nuget.dgspec.json
 obj/StrandsPNGCompression.csproj.nuget.g.props
+LCG.cs
