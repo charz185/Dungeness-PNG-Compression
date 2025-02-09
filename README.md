@@ -1,3 +1,5 @@
+![Dungeness Logo](https://github.com/charz185/Dungeness-PNG-Compression/blob/main/SampleImages/DungenessLogo.png)
+
 # Dungeness Lossless Compression C# Library
 
 This C# library allows the lossless compression of PNG's through GPU processing and XOR shift number generators.
