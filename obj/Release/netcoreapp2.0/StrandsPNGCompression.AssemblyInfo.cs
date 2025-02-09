@@ -11,13 +11,8 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("Charles Zabelski")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("StrandsPNGCompression")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
-[assembly: System.Reflection.AssemblyDescriptionAttribute(@"
-	  Dungeness is a image comrpession library that uses GPU processing power to losslessly compress images.
-	  This library compresses images using XORShifts and some other dependencies like ILGPU and ImageMagcik to compress your images.
-	  Read the readme file as well to better understand the use case of this library.
-	")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1358ad8ae85a7f5c3408a33569fe8c9fc4eb1676")]
 [assembly: System.Reflection.AssemblyProductAttribute("StrandsPNGCompression")]

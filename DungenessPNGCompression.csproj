@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<PackageId>CharlesZ.Dungeness</PackageId>
+	<Version>1.0.0</Version>
+	<Authors>Charles Zabelski</Authors>
+	<Description>
+	  Dungeness is a image comrpession library that uses GPU processing power to losslessly compress images.
+	  This library compresses images using XORShifts and some other dependencies like ILGPU and ImageMagcik to compress your images.
+	  Read the readme file as well to better understand the use case of this library.
+	</Description>
+  </PropertyGroup>
+  <PropertyGroup>
+	  <PublishSingleFile>true</PublishSingleFile>
+	  <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ILGPU" Version="1.5.1" />
+    <PackageReference Include="ILGPU.Algorithms" Version="1.5.1" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.2.0" />
+    <PackageReference Include="Magick.NET.Core" Version="14.2.0" />
+  </ItemGroup>
+
+</Project>

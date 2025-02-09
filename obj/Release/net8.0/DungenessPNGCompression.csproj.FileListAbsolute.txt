@@ -1,0 +1,13 @@
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Release\net8.0\DungenessPNGCompression.deps.json
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Release\net8.0\DungenessPNGCompression.dll
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\bin\Release\net8.0\DungenessPNGCompression.pdb
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.csproj.AssemblyReference.cache
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.AssemblyInfoInputs.cache
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.AssemblyInfo.cs
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.csproj.CoreCompileInputs.cache
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.sourcelink.json
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.dll
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\refint\DungenessPNGCompression.dll
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\DungenessPNGCompression.pdb
+C:\Users\CharlesZ\source\repos\StrandsPNGCompression\Dungeness-PNG-Compression\obj\Release\net8.0\ref\DungenessPNGCompression.dll

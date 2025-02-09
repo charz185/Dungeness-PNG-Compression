@@ -57,19 +57,18 @@ class RandomGen
         { 
             indexes2[i] = (uint)indexes[i];
         }
-        uint[] new1 = new uint[indexes.Count];
+        //uint[] new1 = new uint[indexes.Count];
         for (ulong i = 0; i < max1; i++)
         {
-            new1 = RandomGen.nextBatch(i,max, indexes.Count);
+            uint[] new1 = RandomGen.nextBatch(i,max, indexes.Count);
 
             
-            if (indexes2.ToList().SequenceEqual(new1.ToList()))
+            if (indexes2.SequenceEqual(new1))
             {
                 result = i;
                 return result;
             }
         }
-
         return result;  
     }
     public static ulong ILGPU1(List<int> batch,int max,ulong length)
@@ -221,8 +220,8 @@ class RandomGen
     {
         if (i != 0)
         {
-            if (Atomic.CompareExchange(ref result[0], 0, 0) == 0)
-            {
+            //if (Atomic.CompareExchange(ref result[0], 0, 0) == 0)
+            //{
                 ulong last = (ulong)i + offset;
                 for (int z = 0; z < batch.Length; z++)
                 {
@@ -243,10 +242,9 @@ class RandomGen
 
                 if (found)
                 {
-                    Atomic.Exchange(ref result[0], (int)i);
+                    result[0] = i;
                 }
-            }
+            //}
         }
-
     }
 }
