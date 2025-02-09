@@ -1,5 +1,5 @@
-﻿/*  Charles Zabelski's image compression liibrary "Dungeness"
-    Copyright (C) <year>  <name of author>
+﻿/*  Charles Zabelski's image compression library "Dungeness"
+    Copyright (C) 2025  Charles Zabelski
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as

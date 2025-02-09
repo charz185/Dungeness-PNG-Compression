@@ -1,5 +1,21 @@
+/*  Charles Zabelski's image compression library "Dungeness"
+    Copyright (C) 2025  Charles Zabelski
 
-﻿using System;
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -115,6 +131,7 @@ class RandomGen
         
         
     }
+
     public static ulong ILGPU2(List<int> batch, int max, ulong length)
     {
         using var context = Context.Create(builder => builder.Default().EnableAlgorithms());
@@ -203,17 +220,99 @@ class RandomGen
 
 
     }
-    static void Kernel4(Index1D i, int max, ArrayView2D<uint, Stride2D.DenseY> batch1, ArrayView1D<int, Stride1D.Dense> batch, ulong offset)
+
+    public static List<ulong> BatchesToSeedsILGPU(List<List<uint>> batches, int max, ulong length)
     {
-        ulong last = (ulong)i + offset;
-        //batch1[new Index2D(i, 0)] = (UInt32)(last % (ulong)max);
-        for (int z = 0; z < batch.Length; z++)
+        using var context = Context.Create(builder => builder.Default().EnableAlgorithms());
+
+        // Create accelerator for the given device
+        int DeviceCount = context.GetCudaDevices().Count;
+        Device d = context.GetCudaDevices()[0];
+        using var accelerator = d.CreateAccelerator(context);
+        var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1D, int, ArrayView2D<uint, Stride2D.DenseY>, ArrayView2D<uint, Stride2D.DenseY>, ArrayView1D<int, Stride1D.Dense>, ulong, int>(Kernel4);
+        using var batch1 = accelerator.Allocate1D<uint>(batches.Count * batches[0].Count);
+        Index2D index2 = new Index2D( batches.Count, batches[0].Count);
+
+
+        using var ResultBatch1 = accelerator.Allocate1D<int>(batches.Count);
+        ulong[] resultSeed = new ulong[batches.Count];
+
+        ulong seed2 = 0;
+        var batch2 = new uint[(ulong)(length * (ulong)batches[0].Count)];
+        using var inputBuffer = accelerator.Allocate1D(batch2);
+        ulong offset = 0;
+
+        uint[,] finalBatch = new uint[length, batches.Count];
+        uint[,] batch12 = new uint[batches.Count,batches[0].Count];
+        int i1 = 0;
+        foreach (var batch in batches)
         {
+            int i2 = 0;
+            foreach (int i in batch)
+            {
+                batch12[i1,i2] = ((uint)i);
+                i2++;
+            }
+            i1++;
+        }
+        batch1.MemSetToZero();
+        var batch13 = batch1.View.As2DDenseYView(index2);
+        batch13.CopyFromCPU(batch12);
+        while (seed2 == 0)
+        {
+            inputBuffer.MemSetToZero();
+            var dimXY = new Index2D((int)length, batches[0].Count);
+            var batch3 = inputBuffer.View.As2DDenseYView(dimXY);
+
+            kernel((int)length, max, batch3, batch13, ResultBatch1.View, offset, batches[0].Count);
+            var finalBatch1 = new uint[length, batches[0].Count];
+            batch3.CopyToCPU(finalBatch1);
+
+            for(ulong i = 0; i < length; i++)
+            {
+                List<uint> new1 = [];
+                for (int y = 0; y < batches[0].Count; y++)
+                {
+                    new1.Add(finalBatch1[i,y]);
+                }
+
+                
+                for (int z =0; z< batches.Count; z++)
+                {
+                    if (resultSeed[z] == 0 && new1.SequenceEqual(batches[z]))
+                    {      
+                        resultSeed[z] = offset + i;
+                        Console.WriteLine(resultSeed[z]);
+                    }
+                }
+            }
             
-            last ^= (last << 21);
-            last ^= (last >>> 35);
-            last ^= (last << 4);
-            batch1[new Index2D(i, z)] = (UInt32)(last % (ulong)max);
+            if (resultSeed.Min() != 0)
+            {
+                seed2 = 1;
+            }
+            offset += (ulong)(length);
+            Console.WriteLine("offset "+offset);
+        }
+
+        return resultSeed.ToList();
+
+
+    }
+    static void Kernel4(Index1D i, int max, ArrayView2D<uint, Stride2D.DenseY> batch1, ArrayView2D<uint, Stride2D.DenseY> batches, ArrayView1D<int, Stride1D.Dense> result, ulong offset,int batchCount)
+    {
+        if (i != 0)
+        {
+            ulong last = (ulong)i + offset;
+            for (int z = 0; z < batchCount; z++)
+            {
+                last ^= (last << 13);
+                last ^= (last >>> 17);
+                last ^= (last << 5);
+                batch1[new Index2D(i, z)] = (uint)(last % (ulong)max);
+            }
+
+        
         }
     }
     static void Kernel3(Index1D i,int max,ArrayView2D<uint,Stride2D.DenseY> batch1, ArrayView1D<uint,Stride1D.Dense> batch, ArrayView1D<int, Stride1D.Dense> result,ulong offset)
@@ -242,7 +341,8 @@ class RandomGen
 
                 if (found)
                 {
-                    result[0] = i;
+                    //result[0] = i;
+                    Atomic.CompareExchange(ref result[0], 0, i);                    
                 }
             //}
         }

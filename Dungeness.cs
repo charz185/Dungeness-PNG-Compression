@@ -1,5 +1,5 @@
-/*  Charles Zabelski's image compression liibrary "Dungeness"
-    Copyright (C) <year>  <name of author>
+/*  Charles Zabelski's image compression library "Dungeness"
+    Copyright (C) 2025  Charles Zabelski
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -99,13 +99,40 @@ public class Dungeness
         }
         return OtherSeed;
     }
+    private static List<ulong> FindSeedOfBatches(List<IPixel<byte>> UniqueList, List<List<IPixel<byte>>> batches, bool useCpu, ulong length, int GPUCount = 1)
+    {
+        List<List<uint>> indexes = [];
+        List<IMagickColor<byte>> Unique = [];
+        foreach (IPixel<byte> pixel in UniqueList)
+        {
+            Unique.Add(pixel.ToColor());
+        }
+        Unique.Distinct();
+        int i1 = 0;
+        foreach (List<IPixel<byte>> batch in batches)
+        {
+            indexes.Add([]);
+            foreach (IPixel<byte> c in batch)
+            {
+                indexes[i1].Add((uint)Unique.IndexOf(c.ToColor()));
+                
+            }
+            i1++;
+        }
+       Stopwatch x = Stopwatch.StartNew();
+        x.Start();
+        List<ulong> Seeds = RandomGen.BatchesToSeedsILGPU(indexes,UniqueList.Count,9999999);
+        x.Stop();
+        Console.WriteLine(x.ElapsedMilliseconds+"ms");
+        return Seeds;
+    }
     private static void saveToBytes(List<IPixel<byte>> unique, List<ulong> seeds, String path, int batchSize, int[] imgSize)
     {
         using (FileStream fileStream = new FileStream(path, FileMode.Create))
         {
             using (BinaryWriter binaryWriter = new BinaryWriter(fileStream))
             {
-                binaryWriter.Write((Int16)(batchSize));
+                binaryWriter.Write((byte)(batchSize));
                 binaryWriter.Write((Int16)imgSize[0]);
                 binaryWriter.Write((Int16)imgSize[1]);
                 binaryWriter.Write((Int16)unique.Count);
@@ -136,7 +163,7 @@ public class Dungeness
                 binaryWriter.Write((Int16)divideX);
                 foreach (List<object> result in results) {
                     List<IPixel<byte>> unique = (List<IPixel<byte>>)result[0];
-                    List<uint> seeds = (List<uint>)result[1];
+                    List<ulong> seeds = (List<ulong>)result[1];
                     binaryWriter.Write((Int32)unique.Count);
                     for (int i = 0; i < unique.Count; i++)
                     {
@@ -168,7 +195,7 @@ public class Dungeness
         {
             using (BinaryReader binaryReader = new BinaryReader(fileStream))
             {
-                batchSize = binaryReader.ReadInt16();
+                batchSize = binaryReader.ReadByte();
                 imgSize[0] = (uint)binaryReader.ReadInt16();
                 imgSize[1] = (uint)binaryReader.ReadInt16();
                 divideX = (uint)binaryReader.ReadInt16();
@@ -305,7 +332,7 @@ public class Dungeness
                 Length = 99999;
             }
             
-            List<uint> returnList = [];
+            List<ulong> returnList = [];
             List<List<IPixel<byte>>> list = [];
             for (int i = 0; i < Old.Count; i += batchSize)
             {
@@ -313,6 +340,8 @@ public class Dungeness
                 returnList.Add(0);
             }
             int completed = 0;
+            returnList = FindSeedOfBatches(OldUnique, list,false,Length,1);
+            /*
             foreach (List<IPixel<byte>> i in list)
             { 
                 ulong seedFound = 0;
@@ -341,7 +370,7 @@ public class Dungeness
                     Console.WriteLine("Completed: " + completed + "/" + list.Count);
                 }
 
-            }
+            }*/
 
             //0
             subSectionsResults.Add([]);
