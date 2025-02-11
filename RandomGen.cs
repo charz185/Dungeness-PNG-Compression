@@ -43,10 +43,10 @@ class RandomGen
     }
     private uint nextInt(int max)
     {
-        
-        this.last ^= (this.last << 13);
-        this.last ^= (this.last >>> 17);
-        this.last ^= (this.last << 5);
+
+        last ^= (last << 13);
+        last ^= (last >>> 7);
+        last ^= (last << 17);
         uint newI = (UInt32)(this.last % (ulong)max);
         return newI;
     
@@ -235,7 +235,7 @@ class RandomGen
 
 
         using var ResultBatch1 = accelerator.Allocate1D<int>(batches.Count);
-        ulong[] resultSeed = new ulong[batches.Count];
+        List<List<ulong>> resultSeed = [];
 
         ulong seed2 = 0;
         var batch2 = new uint[(ulong)(length * (ulong)batches[0].Count)];
@@ -258,6 +258,16 @@ class RandomGen
         batch1.MemSetToZero();
         var batch13 = batch1.View.As2DDenseYView(index2);
         batch13.CopyFromCPU(batch12);
+        List<List<uint>> batches2 = [];
+        batches2 = batches.GetRange(0, batches.Count );
+        List<List<List<uint>>> batches3 = [];
+        int counter = 0;
+        foreach (var batch in batches2)
+        {
+            batches3.Add([[(uint)counter],batch]);
+            counter++;
+        }
+        counter = 0;
         while (seed2 == 0)
         {
             inputBuffer.MemSetToZero();
@@ -268,34 +278,50 @@ class RandomGen
             var finalBatch1 = new uint[length, batches[0].Count];
             batch3.CopyToCPU(finalBatch1);
 
-            for(ulong i = 0; i < length; i++)
+
+            for (ulong i = 0; i < length; i++)
             {
                 List<uint> new1 = [];
                 for (int y = 0; y < batches[0].Count; y++)
                 {
-                    new1.Add(finalBatch1[i,y]);
+                    new1.Add(finalBatch1[i, y]);
                 }
-
-                
-                for (int z =0; z< batches.Count; z++)
+                List<long> removeZ = [];
+                int counterBatches = 0;
+                foreach (var batch in batches3) 
                 {
-                    if (resultSeed[z] == 0 && new1.SequenceEqual(batches[z]))
-                    {      
-                        resultSeed[z] = offset + i;
-                        Console.WriteLine(resultSeed[z]);
+
+                    if (offset+i != 0 && new1.SequenceEqual(batch[1]))
+                    {
+                        resultSeed.Add([(ulong)batch[0][0],(offset + i)]);
+                        counter++;
+                        removeZ.Add(counterBatches);
+                        Console.WriteLine((batches3.Count-removeZ.Count) + " " + counter +" "+ (offset+i));
                     }
+                    counterBatches++;
+                }
+                removeZ.Sort();
+                removeZ.Reverse();
+                foreach(long z in removeZ)
+                {
+                    batches3.RemoveAt((int)z);
                 }
             }
-            
-            if (resultSeed.Min() != 0)
+
+            if (resultSeed.Count >= batches.Count)
             {
                 seed2 = 1;
+                break;
             }
             offset += (ulong)(length);
-            Console.WriteLine("offset "+offset);
+            Console.WriteLine("offset " + offset);
         }
-
-        return resultSeed.ToList();
+        ulong[] seeds = new ulong[batches.Count];
+        foreach (List<ulong> x in resultSeed)
+        {
+            seeds[x[0]] = x[1];
+        }
+        return seeds.ToList();
 
 
     }
@@ -307,8 +333,8 @@ class RandomGen
             for (int z = 0; z < batchCount; z++)
             {
                 last ^= (last << 13);
-                last ^= (last >>> 17);
-                last ^= (last << 5);
+                last ^= (last >>> 7);
+                last ^= (last << 17);
                 batch1[new Index2D(i, z)] = (uint)(last % (ulong)max);
             }
 

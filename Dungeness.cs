@@ -115,13 +115,12 @@ public class Dungeness
             foreach (IPixel<byte> c in batch)
             {
                 indexes[i1].Add((uint)Unique.IndexOf(c.ToColor()));
-                
             }
             i1++;
         }
        Stopwatch x = Stopwatch.StartNew();
         x.Start();
-        List<ulong> Seeds = RandomGen.BatchesToSeedsILGPU(indexes,UniqueList.Count,9999999);
+        List<ulong> Seeds = RandomGen.BatchesToSeedsILGPU(indexes,UniqueList.Count,length);
         x.Stop();
         Console.WriteLine(x.ElapsedMilliseconds+"ms");
         return Seeds;
@@ -325,11 +324,6 @@ public class Dungeness
                         OldUnique.Add(p);
                     }
                 }
-            }
-            Length = (ulong)Math.Pow(OldUnique.Count, batchSize);
-            if ((ulong)Math.Pow(OldUnique.Count, batchSize) > 99999)
-            {
-                Length = 99999;
             }
             
             List<ulong> returnList = [];
