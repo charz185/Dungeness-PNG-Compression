@@ -19,7 +19,7 @@ using System.Reflection;
 	  Read the readme file as well to better understand the use case of this library.
 	")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a56e1aadf67b8237b4a142357d0717e0e6d76e49")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d734a06cf193dd5448cffa0c02ed6a44a533e341")]
 [assembly: System.Reflection.AssemblyProductAttribute("DungenessPNGCompression")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DungenessPNGCompression")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

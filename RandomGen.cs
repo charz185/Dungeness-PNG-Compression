@@ -258,11 +258,11 @@ class RandomGen
         batch1.MemSetToZero();
         var batch13 = batch1.View.As2DDenseYView(index2);
         batch13.CopyFromCPU(batch12);
-        List<List<uint>> batches2 = [];
-        batches2 = batches.GetRange(0, batches.Count );
-        List<List<List<uint>>> batches3 = [];
+        //List<List<uint>> batches2 = [];
+        //batches2 = batches.GetRange(0, batches.Count );
+        List<List<List<uint>>> batches3 = new List<List<List<uint>>>();
         int counter = 0;
-        foreach (var batch in batches2)
+        foreach (var batch in batches)
         {
             batches3.Add([[(uint)counter],batch]);
             counter++;
@@ -286,25 +286,19 @@ class RandomGen
                 {
                     new1.Add(finalBatch1[i, y]);
                 }
-                List<long> removeZ = [];
-                int counterBatches = 0;
+                List<List<List<uint>>> removeZ = [];
                 foreach (var batch in batches3) 
                 {
-
                     if (offset+i != 0 && new1.SequenceEqual(batch[1]))
                     {
                         resultSeed.Add([(ulong)batch[0][0],(offset + i)]);
-                        counter++;
-                        removeZ.Add(counterBatches);
+                        removeZ.Add(batch);
                         Console.WriteLine((batches3.Count-removeZ.Count) + " "+ (offset+i));
                     }
-                    counterBatches++;
                 }
-                removeZ.Sort();
-                removeZ.Reverse();
-                foreach(long z in removeZ)
+                foreach(List<List<uint>> z in removeZ)
                 {
-                    batches3.RemoveAt((int)z);
+                    batches3.Remove(z);
                 }
             }
 

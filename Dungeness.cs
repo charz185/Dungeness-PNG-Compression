@@ -216,7 +216,12 @@ public class Dungeness
                     int seedCount = binaryReader.ReadInt32();
                     for (int i = 0; i < seedCount; i++)
                     {
-                        seeds[seeds.Count-1].Add((ulong)binaryReader.ReadUInt32());
+                        ulong seed = (ulong)binaryReader.ReadUInt32();
+                        byte count = binaryReader.ReadByte();
+                        for (int z = 0; z < count; z++)
+                        {
+                            seeds[seeds.Count - 1].Add(seed);
+                        }
                     }
                 }
             }
@@ -293,11 +298,7 @@ public class Dungeness
         imgSize[0] = (int)sourceImage.Width;
         imgSize[1] = (int)sourceImage.Height;
         int index1 = 0;
-        
-        List<List<List<object>>> foundList = [];
-        
-        
-        
+
         foreach (MagickImage subSection in Subsections)
         {
             Console.WriteLine(subSectionsResults.Count);
@@ -398,7 +399,7 @@ public class Dungeness
         saveLargeToBytes(subSectionsResults, savePath, batchSize, imgSize,divideX);
         
     }
-    public static void ProcCompressImg(String path, String savePath, bool useCpu,int batchSize = -1,ulong Length = 999999 )
+    public static void ProcCompressImg(String path, String savePath, bool useCpu,int batchSize = -1,ulong Length=999999 )
     {
         List<IPixel<byte>> Old = MakeArrayFromImage(path);
         Dictionary<List<MagickColor>, ulong> foundDictionary = new Dictionary<List<MagickColor>, ulong>();
@@ -439,7 +440,6 @@ public class Dungeness
                 if (addin)
                 {
                     OldUnique.Add(p);
-                    //Console.WriteLine(p);
                 }
             }
         }
@@ -463,7 +463,6 @@ public class Dungeness
                 if (x[0].SequenceEqual(i2))
                 {
                     seedFound = (ulong)x[1][0];
-                    // Console.WriteLine("Seed found "+Length);
                 }
             }
 
@@ -482,7 +481,6 @@ public class Dungeness
             {
                 Console.WriteLine("Completed: " + completed + "/" + list.Count);
             }
-
         }
 
         List<ulong> return2 = [];
