@@ -118,7 +118,7 @@ public class Dungeness
             }
             i1++;
         }
-       Stopwatch x = Stopwatch.StartNew();
+        Stopwatch x = Stopwatch.StartNew();
         x.Start();
         List<ulong> Seeds = RandomGen.BatchesToSeedsILGPU(indexes,UniqueList.Count,length);
         x.Stop();
@@ -162,7 +162,7 @@ public class Dungeness
                 binaryWriter.Write((Int16)divideX);
                 foreach (List<object> result in results) {
                     List<IPixel<byte>> unique = (List<IPixel<byte>>)result[0];
-                    List<ulong> seeds = (List<ulong>)result[1];
+                    List<List<ulong>> seeds = (List<List<ulong>>)result[1];
                     binaryWriter.Write((Int32)unique.Count);
                     for (int i = 0; i < unique.Count; i++)
                     {
@@ -172,10 +172,10 @@ public class Dungeness
                         binaryWriter.Write((byte)unique[i].GetChannel(3));
                     }
                     binaryWriter.Write((Int32)seeds.Count);
-                    foreach (uint i in seeds)
+                    foreach (List<ulong> i in seeds)
                     {
-                        //Console.WriteLine(i);
-                        binaryWriter.Write((UInt32)i);
+                        binaryWriter.Write((UInt32)i[0]);
+                        binaryWriter.Write((byte)i[1]);
                     }
                 }
                 binaryWriter.Close();
@@ -300,6 +300,7 @@ public class Dungeness
         
         foreach (MagickImage subSection in Subsections)
         {
+            Console.WriteLine(subSectionsResults.Count);
             List<IPixel<byte>> Old = MakeArrayFromMagickImage(subSection);
 
             List<IPixel<byte>> OldUnique = [];
@@ -331,10 +332,28 @@ public class Dungeness
             for (int i = 0; i < Old.Count; i += batchSize)
             {
                 list.Add(Old.GetRange(i, batchSize));
-                returnList.Add(0);
             }
             int completed = 0;
             returnList = FindSeedOfBatches(OldUnique, list,false,Length,1);
+            List<List<ulong>> returnList2 = [];
+
+            int z = 0;
+            while (z < returnList.Count)
+            {
+                int count = 1;
+                while (z+1< returnList.Count && returnList[z] == returnList[z + 1])
+                {
+                    count++;
+                    z++;
+                    if (count == 255)
+                    {
+                        break;
+                    }
+                }
+                returnList2.Add([returnList[z],(ulong)count]);
+                z++;
+            }
+
             /*
             foreach (List<IPixel<byte>> i in list)
             { 
@@ -371,9 +390,9 @@ public class Dungeness
             //UNIQUE
             subSectionsResults[subSectionsResults.Count - 1].Add(OldUnique);
             //seeds
-            subSectionsResults[subSectionsResults.Count - 1].Add(returnList);
+            subSectionsResults[subSectionsResults.Count - 1].Add(returnList2);
             index1++;
-            foundList.Clear();
+            //foundList.Clear();
         }
         
         saveLargeToBytes(subSectionsResults, savePath, batchSize, imgSize,divideX);

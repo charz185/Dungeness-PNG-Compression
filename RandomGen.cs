@@ -296,7 +296,7 @@ class RandomGen
                         resultSeed.Add([(ulong)batch[0][0],(offset + i)]);
                         counter++;
                         removeZ.Add(counterBatches);
-                        Console.WriteLine((batches3.Count-removeZ.Count) + " " + counter +" "+ (offset+i));
+                        Console.WriteLine((batches3.Count-removeZ.Count) + " "+ (offset+i));
                     }
                     counterBatches++;
                 }
@@ -314,7 +314,7 @@ class RandomGen
                 break;
             }
             offset += (ulong)(length);
-            Console.WriteLine("offset " + offset);
+            //Console.WriteLine("offset " + offset);
         }
         ulong[] seeds = new ulong[batches.Count];
         foreach (List<ulong> x in resultSeed)
@@ -337,8 +337,6 @@ class RandomGen
                 last ^= (last << 17);
                 batch1[new Index2D(i, z)] = (uint)(last % (ulong)max);
             }
-
-        
         }
     }
     static void Kernel3(Index1D i,int max,ArrayView2D<uint,Stride2D.DenseY> batch1, ArrayView1D<uint,Stride1D.Dense> batch, ArrayView1D<int, Stride1D.Dense> result,ulong offset)
